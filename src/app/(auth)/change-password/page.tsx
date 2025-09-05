@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React from "react";
 import { TbEyeFilled } from "react-icons/tb";
@@ -13,15 +14,17 @@ import loginImg from "@/assets/dashboard/login-img.png";
 import logo from "@/assets/dashboard/logo.png";
 import Image from "next/image";
 import { useChangePasswordMutation } from "@/redux/api/authApi";
-
+import Cookies from "js-cookie";
+import { useDispatch } from "react-redux";
+import { setUser } from "@/redux/features/authSlice";
 type Inputs = {
   newPassword: string;
   confirmPassword: string;
 };
 
 export default function ChangePassword() {
-  const [changePassword, { isLoading }] = useChangePasswordMutation();
-
+  const [changePassword] = useChangePasswordMutation();
+  const dispatch = useDispatch();
   const {
     register,
     handleSubmit,
@@ -29,6 +32,8 @@ export default function ChangePassword() {
   } = useForm<Inputs>();
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
+    const token = Cookies.get("accessToken");
+    console.log(token);
     if (data.newPassword !== data.confirmPassword) {
       Swal.fire({
         position: "top-end",
@@ -53,24 +58,33 @@ export default function ChangePassword() {
     }
 
     try {
-      const updatedPassword = {
-        userId: userId,
-        newPassword: data.newPassword,
-        confirmPassword: data.newPassword,
-      };
+      const token = Cookies.get("accessToken");
 
-      const res = await changePassword(updatedPassword).unwrap();
+      if (token) {
+        console.log(token);
+        dispatch(setUser({ accessToken: token }));
+      }
+
+      const res = await changePassword({
+        userId,
+        newPassword: data.newPassword,
+        confirmPassword: data.confirmPassword,
+      }).unwrap();
       console.log(res);
-      Swal.fire({
-        position: "top-end",
-        icon: "success",
-        title: "Password changed successfully",
-        showConfirmButton: false,
-        timer: 1500,
-      }).then(() => {
-        window.location.href = "/login";
-      });
+
+      if (res.success) {
+        Swal.fire({
+          position: "top-end",
+          icon: "success",
+          title: "Password changed successfully",
+          showConfirmButton: false,
+          timer: 1500,
+        }).then(() => {
+          window.location.href = "/login";
+        });
+      }
     } catch (err: any) {
+      console.log(err);
       Swal.fire({
         position: "top-end",
         icon: "error",

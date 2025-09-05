@@ -123,11 +123,6 @@
 //   tagTypes: ["User"],
 // });
 
-
-
-
-
-
 import {
   BaseQueryFn,
   createApi,
@@ -152,17 +147,19 @@ const baseQueryWithAuth: BaseQueryFn<
 > = async (args, api, extraOptions) => {
   const rawBaseQuery = fetchBaseQuery({
     baseUrl,
+
     prepareHeaders: (headers, { getState }) => {
       // First check Redux state for token
       let token = (getState() as RootState).auth?.token;
-      
+      console.log(token);
       // If not in Redux, check cookies
       if (!token && typeof window !== "undefined") {
         token = Cookies.get("accessToken") || null;
       }
-      
+
       if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
+        const res = headers.set("Authorization", `Bearer ${token}`);
+        console.log(res);
       }
       return headers;
     },

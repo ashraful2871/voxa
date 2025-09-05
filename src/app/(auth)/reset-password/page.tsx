@@ -1,50 +1,50 @@
-"use client"
-import React, { useState } from 'react'
-import Image from 'next/image'
-import loginImg from "@/assets/dashboard/login-img.png"
-import logo from "@/assets/dashboard/logo.png"
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card"
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+import React, { useState } from "react";
+import Image from "next/image";
+import loginImg from "@/assets/dashboard/login-img.png";
+import logo from "@/assets/dashboard/logo.png";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
-import { Label } from "@/components/ui/label"
+import { Label } from "@/components/ui/label";
 // import { useForm, SubmitHandler } from "react-hook-form"
 
-import { useId } from "react"
-import { OTPInput, SlotProps } from "input-otp"
-import { cn } from "@/lib/utils"
-import Link from 'next/link'
-import { useResendOtpMutation, useVerifyOtpMutation } from '@/redux/api/authApi'
-import { toast } from 'sonner'
+import { useId } from "react";
+import { OTPInput, SlotProps } from "input-otp";
+import { cn } from "@/lib/utils";
+import {
+  useResendOtpMutation,
+  useVerifyOtpMutation,
+} from "@/redux/api/authApi";
+import { toast } from "sonner";
+import Cookies from "js-cookie";
 
 export default function ResetPassword() {
-
   const [otp, setOtp] = useState("");
   const [verifyOtp, { isLoading }] = useVerifyOtpMutation();
   const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
 
+  const handleResend = async () => {
+    const userId = localStorage.getItem("userId");
+    console.log("Resend OTP for User ID:", userId);
 
-const handleResend = async () => {
-  const userId = localStorage.getItem("resetUserId"); 
- console.log("Resend OTP for User ID:", userId);
- 
-  if (!userId) {
-    toast.error("User ID not found. Please retry the process.");
-    return;
-  }
+    if (!userId) {
+      toast.error("User ID not found. Please retry the process.");
+      return;
+    }
 
-  try {
-    await resendOtp(userId).unwrap(); 
-    toast.success("OTP resent successfully!");
-  } catch (err: any) {
-    toast.error(err?.data?.message || "Failed to resend OTP");
-  }
-};
-
-
-
+    try {
+      const resentUserId = {
+        userId: userId,
+      };
+      const res = await resendOtp(resentUserId).unwrap();
+      console.log(res);
+      toast.success("OTP resent successfully!");
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to resend OTP");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,18 +55,34 @@ const handleResend = async () => {
     }
 
     try {
-      await verifyOtp({ code: otp }).unwrap();
+      const userId = localStorage.getItem("userId");
+      const userinfo = {
+        userId: userId,
+        otpCode: otp,
+      };
+      console.log(userinfo);
+
+      const res = await verifyOtp(userinfo).unwrap();
+      console.log(res);
+
+      const newToken = res?.data?.accessToken;
+      Cookies.set("accessToken", newToken, {
+        expires: 7, // 7 days
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+      });
+
+      console.log(newToken);
+
       toast.success("OTP verified successfully!");
       window.location.href = "/change-password"; // redirect
     } catch (err: any) {
+      console.log(err);
       toast.error(err?.data?.message || "Invalid or expired code");
     }
   };
 
-
-  const id = useId()
-
-
+  const id = useId();
 
   return (
     <div className="min-h-screen bg-background">
@@ -75,8 +91,12 @@ const handleResend = async () => {
         <div className="flex flex-col items-center justify-center">
           <div className="lg:-ml-32">
             <Image src={logo} height={24} width={111} alt="" />
-            <h1 className="text-[32px] font-bold text-primary">Reset Password</h1>
-            <p className="text-sm text-secondary font-medium">Enter the 6-digit code sent to your email</p>
+            <h1 className="text-[32px] font-bold text-primary">
+              Reset Password
+            </h1>
+            <p className="text-sm text-secondary font-medium">
+              Enter the 6-digit code sent to your email
+            </p>
           </div>
 
           <Card className="w-full mt-7 p-0 !bg-transparent border-0 shadow-none lg:max-w-md md:max-w-lg">
@@ -111,22 +131,17 @@ const handleResend = async () => {
                       </button>
                     </p>
 
-
                     {/* {errors.email && <span className="text-red-600">Email is required</span>} */}
                   </div>
 
-
-                  <Link href={'/change-password'}>
-                    <Button
-                      variant="outline"
-                      type="submit"
-                      className="w-full text-base py-5 hover:!text-primary/85 font-bold text-primary"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? "Verifying..." : "Submit Code"}
-                    </Button>
-                  </Link>
-
+                  <Button
+                    variant="outline"
+                    type="submit"
+                    className="w-full text-base py-5 hover:!text-primary/85 font-bold text-primary"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Verifying..." : "Submit Code"}
+                  </Button>
                 </div>
               </form>
             </CardContent>
@@ -134,7 +149,7 @@ const handleResend = async () => {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function Slot(props: SlotProps) {
@@ -147,5 +162,5 @@ function Slot(props: SlotProps) {
     >
       {props.char !== null && <div>{props.char}</div>}
     </div>
-  )
+  );
 }

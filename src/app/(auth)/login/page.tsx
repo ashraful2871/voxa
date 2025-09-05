@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -17,7 +18,6 @@ import loginImg from "@/assets/dashboard/login-img.png";
 import logo from "@/assets/dashboard/logo.png";
 import { useLoginMutation } from "@/redux/api/authApi";
 import { setUser } from "@/redux/features/authSlice";
-
 type Inputs = {
   email: string;
   password: string;
@@ -38,6 +38,12 @@ export default function LoginPage() {
     try {
       const result = await login(data).unwrap();
       console.log("Login successful:", result.data);
+
+      // Cookies.set("accessToken", result.data.accessToken, {
+      //   expires: 7, // 7 days
+      //   secure: process.env.NODE_ENV === "production",
+      //   sameSite: "strict",
+      // });
 
       // Dispatch setUser with the token from response
       // Assuming your API returns { token: "...", user: {...} }
@@ -67,9 +73,9 @@ export default function LoginPage() {
       // const userId = localStorage.getItem("userId");
 
       // Redirect to dashboard after a short delay
-      // setTimeout(() => {
-      // window.location.href = "/admin/overview";
-      // }, 1000);
+      setTimeout(() => {
+        window.location.href = "/admin/overview";
+      }, 1000);
     } catch (error: any) {
       console.error("Login failed:", error);
       Swal.fire({
