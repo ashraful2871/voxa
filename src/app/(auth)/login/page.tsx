@@ -61,10 +61,15 @@ export default function LoginPage() {
         timer: 1500,
       });
 
+      localStorage.setItem("userId", result?.data?.id);
+
+      // Retrieve it for logging
+      // const userId = localStorage.getItem("userId");
+
       // Redirect to dashboard after a short delay
-      setTimeout(() => {
-        window.location.href = "/admin/overview";
-      }, 1000);
+      // setTimeout(() => {
+      // window.location.href = "/admin/overview";
+      // }, 1000);
     } catch (error: any) {
       console.error("Login failed:", error);
       Swal.fire({
