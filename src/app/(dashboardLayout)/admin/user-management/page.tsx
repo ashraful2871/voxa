@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -18,7 +19,12 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useGetAllUserQuery } from "@/redux/features/userManagement/userManagementApi";
+import {
+  useGetAllUserQuery,
+  useUserDetailsQuery,
+} from "@/redux/features/userManagement/userManagementApi";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { receiveUserData } from "@/utils/receiveUserData";
 
 interface User {
   id: string;
@@ -30,124 +36,15 @@ interface User {
   warningCount: number;
 }
 
-// const mockUsers: User[] = [
-//   {
-//     id: 1,
-//     name: "Savannah",
-//     email: "binhan628@gmail.com",
-//     status: "VOXA Free",
-//     joined: "17 Oct, 2020",
-//     warning: 4,
-//   },
-//   {
-//     id: 2,
-//     name: "Jacob Jones",
-//     email: "tranthuy.nute@gmail.com",
-//     status: "VOXA Free",
-//     joined: "22 Oct, 2020",
-//     warning: 0,
-//   },
-//   {
-//     id: 3,
-//     name: "Eleanor Pena",
-//     email: "manhhachkt08@gmail.com",
-//     status: "VOXA Free",
-//     joined: "1 Feb, 2020",
-//     warning: 0,
-//   },
-//   {
-//     id: 4,
-//     name: "Luther Logan",
-//     email: "danghoang87hl@gmail.com",
-//     status: "VOXA Gold",
-//     joined: "22 Oct, 2020",
-//     warning: 2,
-//   },
-//   {
-//     id: 5,
-//     name: "Floyd Miles",
-//     email: "tranthuy.nute@gmail.com",
-//     status: "VOXA Free",
-//     joined: "22 Oct, 2020",
-//     warning: 0,
-//   },
-//   {
-//     id: 6,
-//     name: "Wade Warren",
-//     email: "tienlapspktnd@gmail.com",
-//     status: "VOXA Free",
-//     joined: "8 Sep, 2020",
-//     warning: 1,
-//   },
-//   {
-//     id: 7,
-//     name: "Ralph Edwards",
-//     email: "ckctm12@gmail.com",
-//     status: "VOXA Gold",
-//     joined: "8 Sep, 2020",
-//     warning: 0,
-//   },
-//   {
-//     id: 8,
-//     name: "Ronald Richards",
-//     email: "vuhaithuongnute@gmail.com",
-//     status: "VOXA Free",
-//     joined: "17 Oct, 2020",
-//     warning: 0,
-//   },
-//   {
-//     id: 9,
-//     name: "Devon Lane",
-//     email: "tranthuy.nute@gmail.com",
-//     status: "VOXA Free",
-//     joined: "24 May, 2020",
-//     warning: 1,
-//   },
-//   {
-//     id: 10,
-//     name: "Cody Fisher",
-//     email: "trungkienspktnd@gmail.com",
-//     status: "VOXA Gold",
-//     joined: "22 Oct, 2020",
-//     warning: 0,
-//   },
-//   {
-//     id: 11,
-//     name: "Esther Howard",
-//     email: "binhan628@gmail.com",
-//     status: "VOXA Gold",
-//     joined: "1 Feb, 2020",
-//     warning: 3,
-//   },
-//   {
-//     id: 12,
-//     name: "Dianne Russell",
-//     email: "manhhachkt08@gmail.com",
-//     status: "VOXA Free",
-//     joined: "22 Oct, 2020",
-//     warning: 1,
-//   },
-//   {
-//     id: 13,
-//     name: "Annette Black",
-//     email: "nvt.isst.nute@gmail.com",
-//     status: "VOXA Gold",
-//     joined: "21 Sep, 2020",
-//     warning: 0,
-//   },
-//   {
-//     id: 14,
-//     name: "Arlene McCoy",
-//     email: "thuhang.nute@gmail.com",
-//     status: "VOXA Free",
-//     joined: "8 Sep, 2020",
-//     warning: 4,
-//   },
-// ];
-
 export default function UserManagement() {
+  const [selectId, setSelectId] = useState<string | null>(null);
   const { data } = useGetAllUserQuery(undefined);
-  console.log(data);
+  const { data: userData } = useUserDetailsQuery(
+    selectId ? { id: selectId } : skipToken
+  );
+  // console.log(userData);
+
+  receiveUserData(userData);
 
   const [filter, setFilter] = useState<string>(
     data?.data?.filters?.planType || "ALL"
@@ -169,6 +66,11 @@ export default function UserManagement() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handleUser = (id: string) => {
+    setSelectId(id);
+    //receiveUserData(user); // Save only the clicked user
   };
 
   return (
@@ -222,8 +124,9 @@ export default function UserManagement() {
               <TableBody>
                 {filteredUsers?.map((user: User) => (
                   <TableRow
+                    onClick={() => handleUser(user?.id)}
                     key={user.id}
-                    className="border-border hover:bg-muted/50"
+                    className="border-border hover:bg-muted/50 cursor-pointer"
                   >
                     <TableCell className="font-bold text-sm text-white">
                       {user.name}

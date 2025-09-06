@@ -1,17 +1,28 @@
-"use client"
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
 
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, LabelList } from "recharts"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-
-const reportData = [
-  { reason: "Impersonation", count: 28 },
-  { reason: "Fake ID or Info", count: 19 },
-  { reason: "Inappropriate Profile Photo", count: 14 },
-  { reason: "Offensive Bio / Text", count: 17 },
-  { reason: "Spam Account", count: 16 },
-]
+import {
+  Bar,
+  BarChart,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  LabelList,
+} from "recharts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useReportedUserReasonQuery } from "@/redux/features/userManagement/userManagementApi";
 
 export default function ReportedUsersChart() {
+  const { data: report } = useReportedUserReasonQuery(undefined);
+
+  // Transform API response to recharts format
+  const chartData =
+    report?.data?.data?.map((item: any) => ({
+      reason: item.reasonTitle,
+      count: item.count,
+    })) || [];
+
   return (
     <Card className="w-full !bg-foreground !border-0 !shadow-none">
       <CardHeader>
@@ -20,21 +31,33 @@ export default function ReportedUsersChart() {
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="h-[233px] w-full"> {/* Increased height */}
+        <div className="h-[233px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart 
-              data={reportData} 
-              barSize={50} 
-              margin={{ top: 15, right: 20, left: 10, bottom: 50 }} // extra space for labels
+            <BarChart
+              data={chartData}
+              barSize={50}
+              margin={{ top: 15, right: 20, left: 10, bottom: 50 }}
             >
               <defs>
                 <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(0, 84%, 60%)" stopOpacity={0.9} />
-                  <stop offset="100%" stopColor="hsl(0, 84%, 60%)" stopOpacity={0.2} />
+                  <stop
+                    offset="0%"
+                    stopColor="hsl(0, 84%, 60%)"
+                    stopOpacity={0.9}
+                  />
+                  <stop
+                    offset="100%"
+                    stopColor="hsl(0, 84%, 60%)"
+                    stopOpacity={0.2}
+                  />
                 </linearGradient>
               </defs>
 
-              <CartesianGrid strokeDasharray="0" vertical={false} stroke="hsl(240, 3.7%, 15.9%)" />
+              <CartesianGrid
+                strokeDasharray="0"
+                vertical={false}
+                stroke="hsl(240, 3.7%, 15.9%)"
+              />
 
               <XAxis
                 dataKey="reason"
@@ -52,14 +75,18 @@ export default function ReportedUsersChart() {
                 tickLine={false}
               />
 
-              <Bar dataKey="count" fill="url(#barGradient)" radius={[8, 8, 0, 0]}>
+              <Bar
+                dataKey="count"
+                fill="url(#barGradient)"
+                radius={[8, 8, 0, 0]}
+              >
                 <LabelList
                   dataKey="count"
                   position="top"
                   fill="#fff"
                   fontSize={12}
                   fontWeight="bold"
-                  offset={5} 
+                  offset={5}
                 />
               </Bar>
             </BarChart>
@@ -67,5 +94,5 @@ export default function ReportedUsersChart() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
