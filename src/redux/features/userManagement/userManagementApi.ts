@@ -68,6 +68,18 @@ const commentApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+    moderationQueue: builder.query({
+      query: () => ({
+        url: `/admin/all-voice-moderation`,
+        method: "GET",
+      }),
+    }),
+    verificationQueue: builder.query({
+      query: () => ({
+        url: `/admin/all-verifications`,
+        method: "GET",
+      }),
+    }),
 
     ////////////////////////////////////
     getSingleComment: builder.query({
@@ -101,6 +113,8 @@ export const {
   useReportedUserReasonQuery,
   useCurrentPlanQuery,
   useUserDetailsQuery,
+  useModerationQueueQuery,
+  useVerificationQueueQuery,
   useGetAllUserQuery,
   useGetSingleCommentQuery,
 } = commentApi;
