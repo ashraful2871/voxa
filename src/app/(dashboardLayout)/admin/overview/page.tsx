@@ -29,7 +29,6 @@ export default function Overview() {
   const { data: report } = useUserReportQuery(undefined);
   const { data: subscription } = useSubscriptionUsagesQuery(undefined);
   const { data: plans } = useCurrentPlanQuery(undefined);
-  console.log(plans?.data?.allPlans);
 
   return (
     <div className="flex justify-end">
