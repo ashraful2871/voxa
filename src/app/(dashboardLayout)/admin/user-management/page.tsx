@@ -25,6 +25,7 @@ import {
 } from "@/redux/features/userManagement/userManagementApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { receiveUserData } from "@/utils/receiveUserData";
+import PageLoading from "@/components/shared/PageLoading";
 
 interface User {
   id: string;
@@ -38,7 +39,7 @@ interface User {
 
 export default function UserManagement() {
   const [selectId, setSelectId] = useState<string | null>(null);
-  const { data } = useGetAllUserQuery(undefined);
+  const { data, isLoading } = useGetAllUserQuery(undefined);
   const { data: userData } = useUserDetailsQuery(
     selectId ? { id: selectId } : skipToken
   );
@@ -52,17 +53,17 @@ export default function UserManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const filteredUsers = data?.data?.users?.filter((user) => {
+  const filteredUsers = data?.data?.users?.filter((user: any) => {
     if (filter === "ALL") return true;
     return user.voxaPlanType === filter;
   });
 
   const totalPages = Math.ceil(filteredUsers?.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedUsers = filteredUsers?.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
+  // const startIndex = (currentPage - 1) * itemsPerPage;
+  // const paginatedUsers = filteredUsers?.slice(
+  //   startIndex,
+  //   startIndex + itemsPerPage
+  // );
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -72,7 +73,9 @@ export default function UserManagement() {
     setSelectId(id);
     //receiveUserData(user); // Save only the clicked user
   };
-
+  if (isLoading) {
+    return <PageLoading></PageLoading>;
+  }
   return (
     <div className="mx-72">
       <div className="w-full max-w-7xl text-secondary bg-foreground p-5 rounded-lg mx-auto space-y-6">

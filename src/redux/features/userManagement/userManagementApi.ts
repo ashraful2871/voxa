@@ -80,6 +80,18 @@ const commentApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+    reports: builder.query({
+      query: () => ({
+        url: `/admin/all-reports`,
+        method: "GET",
+      }),
+    }),
+    subscriptionManagement: builder.query({
+      query: () => ({
+        url: `/admin/subscription-users-management`,
+        method: "GET",
+      }),
+    }),
 
     ////////////////////////////////////
     getSingleComment: builder.query({
@@ -115,6 +127,8 @@ export const {
   useUserDetailsQuery,
   useModerationQueueQuery,
   useVerificationQueueQuery,
+  useReportsQuery,
+  useSubscriptionManagementQuery,
   useGetAllUserQuery,
   useGetSingleCommentQuery,
 } = commentApi;

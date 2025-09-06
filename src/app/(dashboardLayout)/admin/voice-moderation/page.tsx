@@ -30,12 +30,13 @@ import {
 } from "@/components/ui/popover";
 import { MdOutlineCalendarMonth } from "react-icons/md";
 import { useModerationQueueQuery } from "@/redux/features/userManagement/userManagementApi";
+import PageLoading from "@/components/shared/PageLoading";
 
 export default function VoiceModeration() {
   const [selectedTab, setSelectedTab] = useState("tab-1");
 
-  const { data } = useModerationQueueQuery(undefined);
-  console.log(data?.data?.voiceModerations);
+  const { data, isLoading } = useModerationQueueQuery(undefined);
+
   const [filter, setFilter] = useState<string>("All");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -69,7 +70,9 @@ export default function VoiceModeration() {
 
   const [open, setOpen] = React.useState(false);
   const [date, setDate] = React.useState<Date | undefined>(undefined);
-
+  if (isLoading) {
+    return <PageLoading></PageLoading>;
+  }
   return (
     <div className="mx-72">
       <div className="w-full max-w-7xl text-secondary bg-foreground p-5 rounded-lg mx-auto space-y-6">
