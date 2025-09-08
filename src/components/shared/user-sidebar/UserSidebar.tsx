@@ -23,10 +23,9 @@ import { Button } from "@/components/ui/button";
 import { getUserData } from "@/utils/receiveUserData";
 export default function UserSidebar() {
   const [userData, setUserData] = useState<any>(getUserData());
-  console.log("user data ", userData);
   useEffect(() => {
     const handleUserUpdate = () => {
-      setUserData(getUserData()); // get the latest data from localStorage
+      setUserData(getUserData());
     };
 
     // Listen to the custom event
