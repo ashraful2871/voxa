@@ -29,16 +29,27 @@ import {
 import { MdOutlineCalendarMonth } from "react-icons/md";
 import { useVerificationQueueQuery } from "@/redux/features/userManagement/userManagementApi";
 import PageLoading from "@/components/shared/PageLoading";
+import { useVerificationDetailsQuery } from "@/redux/features/userManagement/verification-details";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { receivedVerificationDetails } from "@/utils/receivedVerificationDetails";
 
 export default function Verifications() {
   const { data, isLoading } = useVerificationQueueQuery(undefined);
-
+  const [selectId, setSelectId] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>("All");
   const [selectedTab, setSelectedTab] = useState<string>("tab-1");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState<Date | undefined>(undefined);
+  const { data: verificationDetails } = useVerificationDetailsQuery(
+    selectId ? { id: selectId } : skipToken
+  );
 
+  useEffect(() => {
+    if (verificationDetails) {
+      receivedVerificationDetails(verificationDetails);
+    }
+  }, [verificationDetails]);
   const itemsPerPage = 10;
   const verifications = data?.data?.verifications || [];
 
@@ -71,6 +82,14 @@ export default function Verifications() {
   useEffect(() => {
     setCurrentPage(1);
   }, [filter, selectedTab]);
+
+  const handleVerificationDetails = (user: any) => {
+    setSelectId(user?.userId);
+    localStorage.setItem("Verification Queue", JSON.stringify(user));
+
+    console.log(user);
+  };
+
   if (isLoading) {
     return <PageLoading></PageLoading>;
   }
@@ -168,6 +187,7 @@ export default function Verifications() {
               <TableBody>
                 {paginatedVerifications.map((user: any) => (
                   <TableRow
+                    onClick={() => handleVerificationDetails(user)}
                     key={user.id}
                     className="border-border hover:bg-muted/50"
                   >
