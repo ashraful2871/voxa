@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -46,7 +46,11 @@ export default function VoiceModeration() {
     selectId ? { id: selectId } : skipToken
   );
 
-  receivedModerationDetails(moderationDetails);
+  useEffect(() => {
+    if (moderationDetails) {
+      receivedModerationDetails(moderationDetails);
+    }
+  }, [moderationDetails]);
 
   const filteredUsers =
     data?.data?.voiceModerations
