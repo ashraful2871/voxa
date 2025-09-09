@@ -189,7 +189,7 @@ export default function Verifications() {
                   <TableRow
                     onClick={() => handleVerificationDetails(user)}
                     key={user.id}
-                    className="border-border hover:bg-muted/50"
+                    className="border-border hover:bg-muted/50 cursor-pointer"
                   >
                     <TableCell className="text-white text-sm font-bold">
                       {user.userName}

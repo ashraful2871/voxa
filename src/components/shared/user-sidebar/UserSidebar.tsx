@@ -6,12 +6,15 @@ import {
   IoBagOutline,
   IoBagSharp,
   IoCalendarClearOutline,
+  IoCalendarNumberOutline,
 } from "react-icons/io5";
-import { FaCircleCheck, FaHashtag } from "react-icons/fa6";
+import { FaCircleCheck, FaHashtag, FaIdCard } from "react-icons/fa6";
 import {
+  MdEmail,
   MdOutlineCheckCircleOutline,
   MdOutlineLocationOn,
   MdOutlinePhone,
+  MdOutlineVerifiedUser,
   MdOutlineWatchLater,
 } from "react-icons/md";
 import { FiMail } from "react-icons/fi";
@@ -27,6 +30,7 @@ import { getVerificationData } from "@/utils/receivedVerificationDetails";
 import { getReportData } from "@/utils/receivedReportDetails";
 import { getSSubscriptionData } from "@/utils/receivedSubscriptionDetails";
 import VoiceNotePlayer from "@/utils/VoiceNotePlayer";
+import { FaMoneyCheckAlt } from "react-icons/fa";
 
 export default function UserSidebar() {
   const [userData, setUserData] = useState<any>(getUserData());
@@ -44,7 +48,7 @@ export default function UserSidebar() {
   const pathName = usePathname();
   console.log(pathName);
 
-  console.log(moderationDetails);
+  console.log(subscriptionDetails);
 
   useEffect(() => {
     const handleUserUpdate = () => {
@@ -137,24 +141,48 @@ export default function UserSidebar() {
       {pathName === "/admin/user-management" && (
         <div className="flex justify-end">
           <div className="h-[850px] bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg">
-            <Image src={user} alt="" height={80} width={80} />
+            {/* Profile Image */}
+            <Image
+              src={
+                userData?.image ||
+                "https://i.ibb.co.com/jvvWfZ0w/1000-F-349497933-Ly4im8-BDm-HLa-Lzgy-Kg2f2y-ZOv-Jj-Btlw5.jpg"
+              }
+              alt={userData?.name || "User"}
+              height={80}
+              width={80}
+              className="rounded-full object-cover"
+            />
 
+            {/* Name + Badges */}
             <div className="flex justify-between items-center mt-3">
               <h2 className="text-xl font-bold text-white">{userData?.name}</h2>
               <div className="flex gap-2">
-                <FaCircleCheck className="text-lg text-white" />
-                <IoBagSharp className="text-lg text-white" />
+                {userData?.isIdentityImageVerified && (
+                  <FaCircleCheck className="text-lg text-green-500" />
+                )}
+                {userData?.isProMember && (
+                  <IoBagSharp className="text-lg text-yellow-400" />
+                )}
               </div>
             </div>
-            <p className="text-sm font-me text-secondary border-b border-secondary pb-3">
-              <span className="text-warning">VOXA Gold</span>- End in 26
-              Oct,2025
+
+            {/* Membership */}
+            <p className="text-sm font-medium text-secondary border-b border-secondary pb-3">
+              <span className="text-warning">{userData?.voxaPlanType}</span> –
+              Ends{" "}
+              {new Date(userData?.membershipEnds).toLocaleDateString("en-US", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}
             </p>
+
+            {/* User Info */}
             <div className="pt-2 border-b pb-3 border-secondary">
               <div className="flex gap-2 my-1 items-center text-secondary">
                 <MdOutlineLocationOn className="text-2xl" />
                 <p className="text-secondary font-medium text-sm">
-                  Berlin, Germany
+                  {userData?.location || "Unknown"}
                 </p>
               </div>
               <div className="flex gap-2 my-1 items-center text-secondary">
@@ -166,22 +194,24 @@ export default function UserSidebar() {
               <div className="flex gap-2 my-1 items-center text-secondary">
                 <IoCalendarClearOutline className="text-xl" />
                 <p className="text-secondary font-medium text-sm">
-                  Age: {userData?.age || 0}
+                  Birthday: {userData?.birthday}
                 </p>
               </div>
               <div className="flex gap-2 my-1 items-center text-secondary">
                 <MdOutlineWatchLater className="text-xl" />
                 <p className="text-secondary font-medium text-sm">
-                  {userData?.createdAt}
+                  Joined:{" "}
+                  {new Date(userData?.createdAt).toLocaleDateString("en-US", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })}
                 </p>
               </div>
               <div className="flex gap-2 my-1 items-center text-secondary">
                 <MdOutlinePhone className="text-xl" />
                 <p className="text-secondary font-medium text-sm">
-                  Phone:{" "}
-                  {userData?.phoneNumber
-                    ? userData?.phoneNumber
-                    : "+8823-xxxxxxx"}
+                  Phone: {userData?.phoneNumber || "+8823-xxxxxxx"}
                 </p>
               </div>
               <div className="flex gap-2 my-1 items-center text-secondary">
@@ -204,12 +234,14 @@ export default function UserSidebar() {
               </div>
             </div>
 
+            {/* Verification */}
             <div className="pt-3">
               <div className="flex justify-between">
                 <div className="flex text-secondary gap-1 items-center">
                   <MdOutlineCheckCircleOutline className="text-xl" />
                   <p className="text-sm font-medium">
-                    ID Verified: {userData?.isVerified ? "Yes" : "No"}
+                    ID Verified:{" "}
+                    {userData?.isIdentityImageVerified ? "Yes" : "No"}
                   </p>
                 </div>
                 <p className="text-sm font-bold cursor-pointer text-primary underline">
@@ -217,30 +249,44 @@ export default function UserSidebar() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center border-b border-secondary  pb-3 gap-1 text-secondary text-sm ">
+
+            {/* Income Verification */}
+            <div className="flex items-center border-b border-secondary pb-3 gap-1 text-secondary text-sm">
               <IoBagOutline className="text-xl" />
               <p>
                 Income Verified: {userData?.isIncomeImageVisible ? "Yes" : "No"}
               </p>
             </div>
+
+            {/* Profile Photos */}
             <div className="pt-3">
               <p className="text-secondary text-sm">
-                Profile Photos: {userData?.profileImages.length}
+                Profile Photos: {userData?.profileImages?.length || 0}
               </p>
               <div className="grid grid-cols-4 gap-2 mt-2">
-                {userData?.profileImages.map((image: string, idx: string) => (
-                  <Image key={idx} src={image} height={54} width={54} alt="" />
+                {userData?.profileImages?.map((image: string, idx: number) => (
+                  <Image
+                    key={idx}
+                    src={image}
+                    height={54}
+                    width={54}
+                    alt={`profile-${idx}`}
+                    className="rounded-md object-cover"
+                  />
                 ))}
               </div>
             </div>
+
+            {/* Bio */}
             <div className="py-3 border-b border-secondary pb-3">
               <h3 className="text-secondary text-sm font-bold">Bio:</h3>
               <p className="font-medium text-secondary text-sm">
-                {userData?.bio
-                  ? userData?.bio
-                  : "Trust me, I m a billionaire, in Dogecoin XD! #aquarius"}
+                {userData?.bio ||
+                  "Trust me, I’m a billionaire, in Dogecoin XD! #aquarius"}
               </p>
             </div>
+
+            {/* User Flag History */}
             <div className="pt-3">
               <h3 className="text-sm text-secondary font-bold">
                 User Flag History
@@ -249,7 +295,7 @@ export default function UserSidebar() {
                 <div>
                   <div className="flex items-center gap-1 text-sm text-secondary">
                     <BiMessageError className="text-xl" />
-                    <p>Voice Note Flagged: 6</p>
+                    <p>Voice Note Flagged: {userData?.blockedCount}</p>
                   </div>
                   <div className="flex items-center gap-1 text-sm text-secondary">
                     <GrStatusWarning className="text-xl" />
@@ -257,13 +303,29 @@ export default function UserSidebar() {
                   </div>
                 </div>
 
-                <div className="text-secondary text-center text-sm">
-                  {/* <p>Flag rate</p>
-            <h2 className='text-base font-bold'>71%</h2> */}
+                {/* Circular Flag Rate */}
+                <div className="relative flex items-center justify-center">
+                  <div
+                    className="h-20 w-20 rounded-full flex items-center justify-center text-center text-white"
+                    style={{
+                      background: `conic-gradient(#E02200 ${
+                        userData?.priorRejection * 10 || 7
+                      }%, #333 0)`,
+                    }}
+                  >
+                    <div className="h-16 w-16 bg-foreground rounded-full flex flex-col items-center justify-center">
+                      <p className="text-[10px] text-secondary">Flag rate</p>
+                      <p className="text-sm font-bold">
+                        {userData?.priorRejection * 10 || 7}%
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-            <Button variant={"outline"} className=" mt-3 !text-white font-bold">
+
+            {/* Button */}
+            <Button variant={"outline"} className="mt-3 !text-white font-bold">
               View in Voice Moderation
             </Button>
           </div>
@@ -274,7 +336,10 @@ export default function UserSidebar() {
           <div className="h-screen bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg flex flex-col">
             {/* Profile Image */}
             <Image
-              src={moderationDetails?.sender?.image || user}
+              src={
+                moderationDetails?.sender?.image ||
+                "https://i.ibb.co.com/jvvWfZ0w/1000-F-349497933-Ly4im8-BDm-HLa-Lzgy-Kg2f2y-ZOv-Jj-Btlw5.jpg"
+              }
               alt="Profile"
               height={80}
               width={80}
@@ -436,10 +501,14 @@ export default function UserSidebar() {
           <div className="bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg flex flex-col">
             {/* Profile Image */}
             <Image
-              src={verificationDetails?.image || user}
+              src={
+                verificationDetails?.image ||
+                "https://i.ibb.co.com/jvvWfZ0w/1000-F-349497933-Ly4im8-BDm-HLa-Lzgy-Kg2f2y-ZOv-Jj-Btlw5.jpg"
+              }
               alt=""
               height={80}
               width={80}
+              className="rounded-full"
             />
 
             {/* Name + Icons */}
@@ -574,10 +643,14 @@ export default function UserSidebar() {
           <div className="h-screen bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg flex flex-col">
             {/* Profile Image */}
             <Image
-              src={reportDetails?.reported?.image || user}
+              src={
+                reportDetails?.reported?.image ||
+                "https://i.ibb.co.com/jvvWfZ0w/1000-F-349497933-Ly4im8-BDm-HLa-Lzgy-Kg2f2y-ZOv-Jj-Btlw5.jpg"
+              }
               alt="Profile"
               height={80}
               width={80}
+              className="rounded-full"
             />
 
             {/* Name + Icons */}
@@ -709,7 +782,10 @@ export default function UserSidebar() {
           <div className="h-screen bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg flex flex-col">
             {/* Profile Image */}
             <Image
-              src={subscriptionDetails?.image || user}
+              src={
+                subscriptionDetails?.image ||
+                "https://i.ibb.co.com/jvvWfZ0w/1000-F-349497933-Ly4im8-BDm-HLa-Lzgy-Kg2f2y-ZOv-Jj-Btlw5.jpg"
+              }
               alt="User Avatar"
               height={80}
               width={80}
@@ -719,97 +795,111 @@ export default function UserSidebar() {
             {/* Name + Icons */}
             <div className="flex justify-between items-center mt-3">
               <h2 className="text-xl font-bold text-white">
-                {subscriptionDetails?.name || "Ropolod263"}
+                {subscriptionDetails?.name || "Unknown User"}
               </h2>
               <div className="flex gap-2">
-                <FaCircleCheck className="text-lg text-white" />
+                <FaCircleCheck className="text-lg text-green-400" />
                 <IoBagSharp className="text-lg text-white" />
               </div>
             </div>
 
             {/* Plan */}
-            <p className="text-sm font-me text-secondary border-b border-secondary pb-3">
-              <span className="text-warning">
-                {subscriptionDetails?.voxaPlanType || "VOXA_Gold"}
-              </span>
+            <p className="text-sm font-medium text-warning border-b border-secondary pb-2">
+              {subscriptionDetails?.voxaPlanType?.replace("_", " ")} – End in{" "}
+              {subscriptionDetails?.subscriptionUser?.subscriptionEnd
+                ? new Date(
+                    subscriptionDetails?.subscriptionUser?.subscriptionEnd
+                  ).toLocaleDateString("en-US", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })
+                : "N/A"}
             </p>
 
             {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto pt-2 pb-3 border-secondary">
-              <div className="flex gap-2 my-1 items-center text-secondary">
-                <MdOutlineLocationOn className="text-2xl" />
-                <p className="text-secondary font-medium text-sm">
-                  {subscriptionDetails?.location || "Unknown Location"}
-                </p>
+            <div className="flex-1 overflow-y-auto pt-2 pb-3 border-secondary text-secondary space-y-3 text-sm">
+              {/* Location */}
+              <div className="flex gap-2 items-center">
+                <MdOutlineLocationOn className="text-lg" />
+                <p>{subscriptionDetails?.location || "Unknown Location"}</p>
               </div>
 
-              <div className="flex gap-2 my-1 items-center text-secondary">
-                <FaHashtag className="text-xl" />
-                <p className="text-secondary font-medium text-sm">
-                  Email:{" "}
-                  {subscriptionDetails?.email || "ropolod263@iotrama.com"}
-                </p>
+              {/* Email */}
+              <div className="flex gap-2 items-center">
+                <MdEmail className="text-lg" />
+                <p>{subscriptionDetails?.email || "N/A"}</p>
               </div>
 
-              <div className="flex gap-2 my-1 items-center text-secondary">
-                <MdOutlineWatchLater className="text-xl" />
-                <p className="text-secondary font-medium text-sm">
+              {/* Identity Verification */}
+              <div className="flex gap-2 items-center">
+                <FaIdCard className="text-lg" />
+                <p>
                   Identity Verified:{" "}
-                  {subscriptionDetails?.isIdentityImageVerified === true
-                    ? "Yes"
-                    : subscriptionDetails?.isIdentityImageVerified === false
-                    ? "No"
-                    : "N/A"}
-                  {/* true → Yes */}
+                  {subscriptionDetails?.isIdentityImageVerified ? "Yes" : "No"}
                 </p>
               </div>
 
-              <div className="flex gap-2 my-1 items-center text-secondary">
-                <IoCalendarClearOutline className="text-xl" />
-                <p className="text-secondary font-medium text-sm">
+              {/* Income Verification */}
+              <div className="flex gap-2 items-center">
+                <FaMoneyCheckAlt className="text-lg" />
+                <p>
                   Income Verified:{" "}
-                  {subscriptionDetails?.isIncomeImageVerified === true
-                    ? "Yes"
-                    : subscriptionDetails?.isIncomeImageVerified === false
-                    ? "No"
-                    : "N/A"}
-                  {/* false → No */}
+                  {subscriptionDetails?.isIncomeImageVerified ? "Yes" : "No"}
                 </p>
               </div>
 
-              <div className="flex gap-2 my-1 items-center text-secondary">
-                <IoCalendarClearOutline className="text-xl" />
-                <p className="text-secondary font-medium text-sm">
+              {/* Subscription Plan */}
+              <div className="flex gap-2 items-center">
+                <IoBagSharp className="text-lg" />
+                <p>
                   Subscription Plan:{" "}
                   {subscriptionDetails?.subscriptionUser
-                    ?.subscriptionPlanType || "ANNUAL"}
+                    ?.subscriptionPlanType || "N/A"}
                 </p>
               </div>
 
-              <div className="flex gap-2 my-1 items-center text-secondary">
-                <IoCalendarClearOutline className="text-xl" />
-                <p className="text-secondary font-medium text-sm">
+              {/* Subscription Status */}
+              <div className="flex gap-2 items-center">
+                <MdOutlineVerifiedUser className="text-lg" />
+                <p>
                   Subscription Status:{" "}
                   {subscriptionDetails?.subscriptionUser?.subscriptionStatus ||
-                    "active"}
+                    "N/A"}
                 </p>
               </div>
 
-              <div className="flex gap-2 my-1 items-center text-secondary">
-                <IoCalendarClearOutline className="text-xl" />
-                <p className="text-secondary font-medium text-sm">
-                  Subscription Start:{" "}
-                  {subscriptionDetails?.subscriptionUser?.subscriptionStart ||
-                    "2025-09-03T08:40:55.000Z"}
+              {/* Subscription Start */}
+              <div className="flex gap-2 items-center">
+                <IoCalendarClearOutline className="text-lg" />
+                <p>
+                  Start Date:{" "}
+                  {subscriptionDetails?.subscriptionUser?.subscriptionStart
+                    ? new Date(
+                        subscriptionDetails?.subscriptionUser?.subscriptionStart
+                      ).toLocaleDateString("en-US", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })
+                    : "N/A"}
                 </p>
               </div>
 
-              <div className="flex gap-2 my-1 items-center text-secondary">
-                <IoCalendarClearOutline className="text-xl" />
-                <p className="text-secondary font-medium text-sm">
-                  Subscription Ends:{" "}
-                  {subscriptionDetails?.subscriptionUser?.subscriptionEnd ||
-                    "2026-09-03T08:40:55.000Z"}
+              {/* Subscription End */}
+              <div className="flex gap-2 items-center">
+                <IoCalendarNumberOutline className="text-lg" />
+                <p>
+                  End Date:{" "}
+                  {subscriptionDetails?.subscriptionUser?.subscriptionEnd
+                    ? new Date(
+                        subscriptionDetails?.subscriptionUser?.subscriptionEnd
+                      ).toLocaleDateString("en-US", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })
+                    : "N/A"}
                 </p>
               </div>
             </div>
@@ -820,13 +910,13 @@ export default function UserSidebar() {
                 variant={"outline"}
                 className="!text-[#00E04B] font-bold w-full"
               >
-                Approve Verification
+                View Payment History
               </Button>
               <Button
                 variant={"outline"}
                 className="!text-[#E02200] font-bold w-full"
               >
-                Reject Submission
+                Cancel Subscription
               </Button>
             </div>
           </div>

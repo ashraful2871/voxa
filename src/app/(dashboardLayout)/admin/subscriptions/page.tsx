@@ -228,7 +228,7 @@ export default function Subscriptions() {
                     <TableRow
                       onClick={() => handleSubsCriptionDetails(user?.id)}
                       key={user.id}
-                      className="border-border hover:bg-muted/50"
+                      className="border-border hover:bg-muted/50 cursor-pointer"
                     >
                       <TableCell className="text-white text-sm font-bold">
                         {user.name}

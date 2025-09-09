@@ -64,7 +64,7 @@ const commentApi = baseApi.injectEndpoints({
     }),
     userDetails: builder.query({
       query: ({ id }) => ({
-        url: `/users/details/${id}`,
+        url: `/admin/user-management/${id}/details`,
         method: "GET",
       }),
     }),
