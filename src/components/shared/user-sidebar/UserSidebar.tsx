@@ -26,10 +26,9 @@ export default function UserSidebar() {
   console.log("user data ", userData);
   useEffect(() => {
     const handleUserUpdate = () => {
-      setUserData(getUserData()); // get the latest data from localStorage
+      setUserData(getUserData());
     };
 
-    // Listen to the custom event
     window.addEventListener("userDataUpdated", handleUserUpdate);
 
     return () => {
@@ -128,7 +127,14 @@ export default function UserSidebar() {
           </p>
           <div className="grid grid-cols-4 gap-2 mt-2">
             {userData?.profileImages.map((image: string, idx: string) => (
-              <Image key={idx} src={image} height={54} width={54} alt="" />
+              <Image
+                referrerPolicy="no-referrer"
+                key={idx}
+                src={image}
+                height={54}
+                width={54}
+                alt=""
+              />
             ))}
           </div>
         </div>
