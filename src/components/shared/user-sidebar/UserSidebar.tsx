@@ -62,7 +62,6 @@ export default function UserSidebar() {
       );
     };
   }, []);
-
   return (
     <>
       {pathName === "/admin/user-management" && (
@@ -194,10 +193,7 @@ export default function UserSidebar() {
                 </div>
               </div>
             </div>
-            <Button
-              variant={"outline"}
-              className="border !border-secondary mt-3 !text-white font-bold"
-            >
+            <Button variant={"outline"} className=" mt-3 !text-white font-bold">
               View in Voice Moderation
             </Button>
           </div>
@@ -205,7 +201,7 @@ export default function UserSidebar() {
       )}
       {pathName === "/admin/voice-moderation" && (
         <div className="flex justify-end">
-          <div className="h-[850px] bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg">
+          <div className="h-[850px] bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg flex flex-col">
             <Image src={user} alt="" height={80} width={80} />
 
             <div className="flex justify-between items-center mt-3">
@@ -224,7 +220,7 @@ export default function UserSidebar() {
               - End in{" "}
               {moderationDetails?.sender?.subscriptionUser?.subscriptionEnd}
             </p>
-            <div className="pt-2 border-b pb-3 border-secondary">
+            <div className="pt-2  pb-3 border-secondary">
               <div className="flex gap-2 my-1 items-center text-secondary">
                 <MdOutlineLocationOn className="text-2xl" />
                 <p className="text-secondary font-medium text-sm">
@@ -248,6 +244,17 @@ export default function UserSidebar() {
                 <p className="text-secondary font-medium text-sm">
                   Flagged by: {moderationDetails?.flagType} Detected aggression
                 </p>
+              </div>
+
+              <div>
+                <h2>Voice Note</h2>
+                <audio className="w-60" controls>
+                  <source
+                    src={moderationDetails?.message?.voiceFile}
+                    type="audio/mpeg"
+                  />
+                  Your browser does not support the audio element.
+                </audio>
               </div>
 
               {/* <div className="flex gap-2 my-1 items-center text-secondary">
@@ -324,11 +331,17 @@ export default function UserSidebar() {
                 <div>
                   <div className="flex items-center gap-1 text-sm text-secondary">
                     <BiMessageError className="text-xl" />
-                    <p>Voice Note Flagged: 6</p>
+                    <p>Voice Note Flagged: {moderationDetails?.totalFlagged}</p>
                   </div>
                   <div className="flex items-center gap-1 text-sm text-secondary">
                     <GrStatusWarning className="text-xl" />
                     <p>Prior Warnings: {userData?.warningCount}</p>
+                  </div>
+                  <div className="mt-5">
+                    <div className="h-20 w-20 border rounded-full border-red-500 text-white text-center ">
+                      <p className="text-xs">Flag rate</p>{" "}
+                      <p>{moderationDetails?.voiceNoteFlaggedPercentage} %</p>
+                    </div>
                   </div>
                 </div>
 
@@ -338,12 +351,32 @@ export default function UserSidebar() {
                 </div>
               </div>
             </div>
-            <Button
-              variant={"outline"}
-              className="border !border-secondary mt-3 !text-white font-bold"
-            >
-              View in Voice Moderation
-            </Button>
+            <div className="mt-auto space-y-2">
+              <Button
+                variant={"outline"}
+                className="!text-[#00E04B] font-bold w-full"
+              >
+                Mark as Safe
+              </Button>
+              <Button
+                variant={"outline"}
+                className="!text-[#E08A00] font-bold w-full"
+              >
+                Issue Warning
+              </Button>
+              <Button
+                variant={"outline"}
+                className="!text-[#E02200] font-bold w-full"
+              >
+                Temporary Suspend
+              </Button>
+              <Button
+                variant={"outline"}
+                className="!text-[#E02200] font-bold w-full"
+              >
+                Permanent Ban
+              </Button>
+            </div>
           </div>
         </div>
       )}

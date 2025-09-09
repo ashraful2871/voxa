@@ -189,7 +189,7 @@ export default function VoiceModeration() {
                   <TableRow
                     onClick={() => handleModerationDetails(user.id)}
                     key={user.id}
-                    className="border-border hover:bg-muted/50"
+                    className="border-border hover:bg-muted/50 cursor-pointer"
                   >
                     <TableCell className="font-bold text-sm text-white">
                       {user.messageId}
