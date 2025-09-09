@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -31,15 +31,26 @@ import {
 import { MdOutlineCalendarMonth } from "react-icons/md";
 import { useModerationQueueQuery } from "@/redux/features/userManagement/userManagementApi";
 import PageLoading from "@/components/shared/PageLoading";
+import { useVoiceModerationDetailsQuery } from "@/redux/features/userManagement/voiceModerationQueue";
+import { receivedModerationDetails } from "@/utils/receivedModerationDetails";
+import { skipToken } from "@reduxjs/toolkit/query";
 
 export default function VoiceModeration() {
+  const [selectId, setSelectId] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState("tab-1");
-
-  const { data, isLoading } = useModerationQueueQuery(undefined);
-
   const [filter, setFilter] = useState<string>("All");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const { data, isLoading } = useModerationQueueQuery(undefined);
+  const { data: moderationDetails } = useVoiceModerationDetailsQuery(
+    selectId ? { id: selectId } : skipToken
+  );
+
+  useEffect(() => {
+    if (moderationDetails) {
+      receivedModerationDetails(moderationDetails);
+    }
+  }, [moderationDetails]);
 
   const filteredUsers =
     data?.data?.voiceModerations
@@ -67,9 +78,14 @@ export default function VoiceModeration() {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-
   const [open, setOpen] = React.useState(false);
   const [date, setDate] = React.useState<Date | undefined>(undefined);
+
+  const handleModerationDetails = (id: string) => {
+    setSelectId(id);
+    console.log(id);
+  };
+
   if (isLoading) {
     return <PageLoading></PageLoading>;
   }
@@ -171,8 +187,9 @@ export default function VoiceModeration() {
               <TableBody>
                 {paginatedUsers.map((user: any) => (
                   <TableRow
+                    onClick={() => handleModerationDetails(user.id)}
                     key={user.id}
-                    className="border-border hover:bg-muted/50"
+                    className="border-border hover:bg-muted/50 cursor-pointer"
                   >
                     <TableCell className="font-bold text-sm text-white">
                       {user.messageId}
