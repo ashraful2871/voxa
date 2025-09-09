@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -21,6 +21,9 @@ import {
 import { MdOutlineCalendarMonth } from "react-icons/md";
 import { useReportsQuery } from "@/redux/features/userManagement/userManagementApi";
 import PageLoading from "@/components/shared/PageLoading";
+import { useReportDetailsQuery } from "@/redux/features/userManagement/reportsDetailsApi";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { receivedReportDetails } from "@/utils/receivedReportDetails";
 
 interface Report {
   id: string;
@@ -36,13 +39,22 @@ interface Report {
 }
 
 export default function Reports() {
+  const [selectId, setSelectId] = useState<string | null>(null);
   const { data, isLoading } = useReportsQuery(undefined);
-  const reports: Report[] = data?.data?.reports || [];
+  const { data: reportDetails } = useReportDetailsQuery(
+    selectId ? { id: selectId } : skipToken
+  );
 
+  useEffect(() => {
+    if (reportDetails) {
+      receivedReportDetails(reportDetails);
+    }
+  }, [reportDetails]);
+
+  const reports: Report[] = data?.data?.reports || [];
   const [filter, setFilter] = useState<string>("All");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState<Date | undefined>(undefined);
 
@@ -65,7 +77,12 @@ export default function Reports() {
 
   const handleTabChange = (value: string) => {
     setFilter(value);
-    setCurrentPage(1); // reset to first page when tab changes
+    setCurrentPage(1);
+  };
+
+  const handleReportDetails = (id: string) => {
+    setSelectId(id);
+    console.log(id);
   };
   if (isLoading) {
     return <PageLoading></PageLoading>;
@@ -150,8 +167,9 @@ export default function Reports() {
               <TableBody>
                 {paginatedReports.map((report) => (
                   <TableRow
+                    onClick={() => handleReportDetails(report?.id)}
                     key={report.id}
-                    className="border-border hover:bg-muted/50"
+                    className="border-border hover:bg-muted/50 cursor-pointer"
                   >
                     <TableCell className="text-sm">
                       {new Date(report.createdAt).toLocaleDateString()}

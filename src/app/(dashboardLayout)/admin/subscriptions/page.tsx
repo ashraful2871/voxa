@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -30,10 +30,24 @@ import { MdOutlineCalendarMonth } from "react-icons/md";
 import { FiPlus } from "react-icons/fi";
 import { useSubscriptionManagementQuery } from "@/redux/features/userManagement/userManagementApi";
 import PageLoading from "@/components/shared/PageLoading";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { useSubscriptionDetailsQuery } from "@/redux/features/userManagement/subscriptionDetailsApi";
+import { receivedSubscriptionDetails } from "@/utils/receivedSubscriptionDetails";
 
 export default function Subscriptions() {
+  const [selectId, setSelectId] = useState<string | null>(null);
   const { data, isLoading, isError } =
     useSubscriptionManagementQuery(undefined);
+
+  const { data: subscriptionDetails } = useSubscriptionDetailsQuery(
+    selectId ? { id: selectId } : skipToken
+  );
+
+  useEffect(() => {
+    if (subscriptionDetails) {
+      receivedSubscriptionDetails(subscriptionDetails);
+    }
+  }, [subscriptionDetails]);
 
   const [filter, setFilter] = useState<string>("All");
   const [currentPage, setCurrentPage] = useState(1);
@@ -86,6 +100,11 @@ export default function Subscriptions() {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
+  const handleSubsCriptionDetails = (id: string) => {
+    setSelectId(id);
+    console.log(id);
+  };
+
   if (isLoading) {
     return <PageLoading></PageLoading>;
   }
@@ -207,6 +226,7 @@ export default function Subscriptions() {
                 <TableBody>
                   {paginatedUsers.map((user: any) => (
                     <TableRow
+                      onClick={() => handleSubsCriptionDetails(user?.id)}
                       key={user.id}
                       className="border-border hover:bg-muted/50"
                     >
