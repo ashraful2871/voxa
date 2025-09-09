@@ -487,6 +487,83 @@ export default function UserSidebar() {
           </div>
         </div>
       )}
+      {pathName === "/admin/reports" && (
+        <div className="flex justify-end">
+          <div className="h-[850px] bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg flex flex-col">
+            <Image src={user} alt="" height={80} width={80} />
+
+            <div className="flex justify-between items-center mt-3">
+              <h2 className="text-xl font-bold text-white">
+                {verificationDetails?.name}
+              </h2>
+              <div className="flex gap-2">
+                <FaCircleCheck className="text-lg text-white" />
+                <IoBagSharp className="text-lg text-white" />
+              </div>
+            </div>
+            <p className="text-sm font-me text-secondary border-b border-secondary pb-3">
+              <span className="text-warning">
+                {verificationDetails?.voxaPlanType}
+              </span>
+            </p>
+            <div className="pt-2  pb-3 border-secondary">
+              <div className="flex gap-2 my-1 items-center text-secondary">
+                <MdOutlineLocationOn className="text-2xl" />
+                <p className="text-secondary font-medium text-sm">
+                  {verificationDetails?.location}
+                </p>
+              </div>
+              <div className="flex gap-2 my-1 items-center text-secondary">
+                <FaHashtag className="text-xl" />
+                <p className="text-secondary font-medium text-sm">
+                  Submitted: {verificationUserDetails?.submittedAt}
+                </p>
+              </div>
+              <div className="flex gap-2 my-1 items-center text-secondary">
+                <MdOutlineWatchLater className="text-xl" />
+                <p className="text-secondary font-medium text-sm">
+                  Prior Rejection: {verificationDetails?.priorRejection}
+                </p>
+              </div>
+
+              <div className="flex gap-2 my-1 items-center text-secondary">
+                <IoCalendarClearOutline className="text-xl" />
+                <p className="text-secondary font-medium text-sm">
+                  Income Verified: {verificationUserDetails?.status}
+                </p>
+              </div>
+              <div className="flex gap-2 my-1 items-center text-secondary">
+                <IoCalendarClearOutline className="text-xl" />
+                <p className="text-secondary font-medium text-sm">
+                  Last Submitted document:: N/A
+                </p>
+              </div>
+
+              {/* <div className="flex gap-2 my-1 items-center text-secondary">
+                <MdOutlineWatchLater className="text-xl" />
+                <p className="text-secondary font-medium text-sm">
+                  Flagged by: {moderationDetails?.flagType} Detected aggression
+                </p>
+              </div> */}
+            </div>
+
+            <div className="mt-auto space-y-2">
+              <Button
+                variant={"outline"}
+                className="!text-[#00E04B] font-bold w-full"
+              >
+                Approve Verification
+              </Button>
+              <Button
+                variant={"outline"}
+                className="!text-[#E02200] font-bold w-full"
+              >
+                Reject Submission
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
