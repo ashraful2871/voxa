@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
@@ -31,6 +32,13 @@ import { getReportData } from "@/utils/receivedReportDetails";
 import { getSSubscriptionData } from "@/utils/receivedSubscriptionDetails";
 import VoiceNotePlayer from "@/utils/VoiceNotePlayer";
 import { FaMoneyCheckAlt } from "react-icons/fa";
+import {
+  useIssuesWarningMutation,
+  useMakeSafeMutation,
+} from "@/redux/features/userManagement/voiceModerationQueue";
+import { toast } from "sonner";
+import Link from "next/link";
+import { useApprovedVerificationMutation } from "@/redux/features/userManagement/verification-details";
 
 export default function UserSidebar() {
   const [userData, setUserData] = useState<any>(getUserData());
@@ -40,6 +48,9 @@ export default function UserSidebar() {
   const [verificationDetails, setVerificationDetails] = useState<any>(
     getVerificationData()
   );
+  const [makeSafe] = useMakeSafeMutation();
+  const [issueWarning] = useIssuesWarningMutation();
+  const [approvedVerification] = useApprovedVerificationMutation();
   const [reportDetails, setReportDetails] = useState<any>(getReportData());
   const [subscriptionDetails, setSubscriptionDetails] = useState<any>(
     getReportData()
@@ -136,6 +147,66 @@ export default function UserSidebar() {
   const verificationUserDetails = JSON.parse(verificationUser);
   console.log(verificationUserDetails);
 
+  //actions make safe
+  const handleMakeSafe = async (id: string) => {
+    console.log(id);
+    const makeSafeData = {
+      reportId: id,
+      action: "DISMISSED",
+    };
+
+    console.log(makeSafeData);
+
+    try {
+      const res = await makeSafe(makeSafeData);
+      if (res?.data?.success) {
+        toast.success("user Make Safe Successfully");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("something WntWrong");
+    }
+  };
+
+  //issue warning
+  const handleIssuesWarning = async (id: string) => {
+    console.log(id);
+
+    const issuesWarningData = {
+      reportId: id,
+    };
+    console.log(issuesWarningData);
+
+    try {
+      const res = await issueWarning(issuesWarningData);
+      console.log(res);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  //temporary suspend
+
+  const temporarySuspend = () => {};
+
+  //approved
+  const handleApprovedVerification = async (id: string) => {
+    const verificationData = {
+      userId: id,
+
+      type: "identity",
+      // "status": "VERIFIED"
+      status: "VERIFIED",
+    };
+    console.log(verificationData);
+
+    try {
+      const res = await approvedVerification(verificationData);
+      console.log(res);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <>
       {pathName === "/admin/user-management" && (
@@ -325,9 +396,14 @@ export default function UserSidebar() {
             </div>
 
             {/* Button */}
-            <Button variant={"outline"} className="mt-3 !text-white font-bold">
-              View in Voice Moderation
-            </Button>
+            <Link href="/admin/voice-moderation">
+              <Button
+                variant={"outline"}
+                className="mt-3 !text-white font-bold"
+              >
+                View in Voice Moderation
+              </Button>
+            </Link>
           </div>
         </div>
       )}
@@ -469,12 +545,14 @@ export default function UserSidebar() {
             {/* Actions */}
             <div className="mt-auto space-y-2">
               <Button
+                onClick={() => handleMakeSafe(moderationDetails?.id)}
                 variant={"outline"}
                 className="!text-[#00E04B] font-bold w-full"
               >
                 Mark as Safe
               </Button>
               <Button
+                onClick={() => handleIssuesWarning(moderationDetails?.senderId)}
                 variant={"outline"}
                 className="!text-[#E08A00] font-bold w-full"
               >
@@ -623,6 +701,9 @@ export default function UserSidebar() {
             {/* Buttons */}
             <div className="mt-auto space-y-2  border-t border-secondary pt-3">
               <Button
+                onClick={() =>
+                  handleApprovedVerification(verificationDetails?.id)
+                }
                 variant={"outline"}
                 className="!text-[#00E04B] font-bold w-full"
               >

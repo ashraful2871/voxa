@@ -8,7 +8,18 @@ const verificationDetailsApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+
+    approvedVerification: builder.mutation({
+      query: (params) => {
+        return {
+          url: `/admin/update-verification-status`,
+          method: "POST",
+          body: params,
+        };
+      },
+    }),
   }),
 });
 
-export const { useVerificationDetailsQuery } = verificationDetailsApi;
+export const { useVerificationDetailsQuery, useApprovedVerificationMutation } =
+  verificationDetailsApi;

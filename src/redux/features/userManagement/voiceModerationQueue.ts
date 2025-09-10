@@ -8,7 +8,41 @@ const voiceModerationApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+
+    makeSafe: builder.mutation({
+      query: (params) => {
+        return {
+          url: `/admin/voice-moderation-action`,
+          method: "POST",
+          body: params,
+        };
+      },
+    }),
+    issuesWarning: builder.mutation({
+      query: (params) => {
+        return {
+          url: `/admin/issued-warning`,
+          method: "POST",
+          body: params,
+        };
+      },
+    }),
+
+    temporarySuspend: builder.mutation({
+      query: (params) => {
+        return {
+          url: `/admin/process-report`,
+          method: "POST",
+          body: params,
+        };
+      },
+    }),
   }),
 });
 
-export const { useVoiceModerationDetailsQuery } = voiceModerationApi;
+export const {
+  useVoiceModerationDetailsQuery,
+  useMakeSafeMutation,
+  useIssuesWarningMutation,
+  useTemporarySuspendMutation,
+} = voiceModerationApi;
