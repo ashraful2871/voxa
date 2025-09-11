@@ -1,5 +1,3 @@
-import withAuth from "@/hoc/withAuth";
-
 const HomePage = () => {
   return (
     <div>
@@ -8,4 +6,4 @@ const HomePage = () => {
   );
 };
 
-export default withAuth(HomePage);
+export default HomePage;
