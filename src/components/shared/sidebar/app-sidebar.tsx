@@ -12,7 +12,6 @@ import {
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
 
-
 const data = {
   // user: {
   //   navMain: [
@@ -38,7 +37,6 @@ const data = {
       {
         title: "Overview",
         url: "/admin/overview",
-
       },
       // {
       //   title: "Users",
@@ -60,7 +58,6 @@ const data = {
       {
         title: "User Management",
         url: "/admin/user-management",
-
       },
       {
         title: "Voice Moderation",
