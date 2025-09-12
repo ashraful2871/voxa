@@ -8,7 +8,14 @@ const reportApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+    temporaryBand: builder.mutation({
+      query: (params) => ({
+        url: `/admin/process-report`,
+        method: "POST",
+        body: params,
+      }),
+    }),
   }),
 });
 
-export const { useReportDetailsQuery } = reportApi;
+export const { useReportDetailsQuery, useTemporaryBandMutation } = reportApi;

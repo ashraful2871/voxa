@@ -40,6 +40,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { useApprovedVerificationMutation } from "@/redux/features/userManagement/verification-details";
 import { User } from "lucide-react";
+import { useTemporaryBandMutation } from "@/redux/features/userManagement/reportsDetailsApi";
 
 export default function UserSidebar() {
   const [userData, setUserData] = useState<any>(getUserData());
@@ -51,6 +52,7 @@ export default function UserSidebar() {
   );
   const [makeSafe, { isLoading }] = useMakeSafeMutation();
   const [issueWarning] = useIssuesWarningMutation();
+  const [temporaryBand] = useTemporaryBandMutation();
   const [approvedVerification] = useApprovedVerificationMutation();
   const [reportDetails, setReportDetails] = useState<any>(getReportData());
   const [subscriptionDetails, setSubscriptionDetails] = useState<any>(
@@ -174,6 +176,8 @@ export default function UserSidebar() {
       toast.error("something WntWrong");
     }
   };
+
+  //issue warning
   const handleIssueWarning = async (id: string) => {
     console.log(id);
     const issueWarningData = {
@@ -197,64 +201,90 @@ export default function UserSidebar() {
     }
   };
 
-  const handleAction = (action: string | null, id: string | undefined) => {
-    if (!action || !id) return;
+  //temporary suspend
+  const handleTemporarySuspend = async (id: string) => {
+    const suspendData = {
+      reportId: id,
+      action: "suspension",
+    };
+
+    try {
+      const res = await temporaryBand(suspendData);
+      console.log(res);
+      if (res?.data?.success) {
+        toast.success("Action taken successfully");
+        setShowConfirm(false);
+      }
+      if (!res.data?.success) {
+        toast.warning(res?.error?.data?.message || "something went wrong");
+        setShowConfirm(false);
+      }
+    } catch (error) {
+      console.log(error);
+      setShowConfirm(false);
+    }
+  };
+
+  //PERMANENT BAND
+  const handlePermanentBan = async (id: string) => {
+    const bandData = {
+      reportId: id,
+      action: "banned",
+    };
+    try {
+      const res = await temporaryBand(bandData);
+      console.log(res);
+      if (res?.data?.success) {
+        toast.success("Action taken successfully");
+        setShowConfirm(false);
+      }
+      if (!res.data?.success) {
+        toast.warning(res?.error?.data?.message || "something went wrong");
+        setShowConfirm(false);
+      }
+    } catch (error) {
+      console.log(error);
+      setShowConfirm(false);
+    }
+  };
+
+  const handleAction = (action: string | null, info: any | undefined) => {
+    if (!action || !info) return;
 
     switch (action) {
       case "Mark as Safe":
-        handleMakeSafe(id);
+        handleMakeSafe(info?.id);
         break;
       case "Issue Warning":
-        handleIssueWarning(id);
+        handleIssueWarning(info?.id);
         break;
-      // case "Temporary Suspend":
-      //   handleTemporarySuspend(id);
-      //   break;
-      // case "Permanent Ban":
-      //   handlePermanentBan(id);
-      //   break;
+      case "Temporary Suspend":
+        handleTemporarySuspend(info?.id);
+        break;
+      case "Permanent Ban":
+        handlePermanentBan(info?.id);
+        break;
     }
   };
 
-  //issue warning
-  const handleIssuesWarning = async (id: string) => {
-    console.log(id);
+  // //approved
+  // const handleApprovedVerification = async (id: string) => {
+  //   const verificationData = {
+  //     userId: id,
 
-    const issuesWarningData = {
-      reportId: id,
-    };
-    console.log(issuesWarningData);
+  //     type: "identity",
+  //     // "status": "VERIFIED"
+  //     status: "VERIFIED",
+  //   };
+  //   console.log(verificationData);
 
-    try {
-      const res = await issueWarning(issuesWarningData);
-      console.log(res);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  //temporary suspend
-
-  const temporarySuspend = () => {};
-
-  //approved
-  const handleApprovedVerification = async (id: string) => {
-    const verificationData = {
-      userId: id,
-
-      type: "identity",
-      // "status": "VERIFIED"
-      status: "VERIFIED",
-    };
-    console.log(verificationData);
-
-    try {
-      const res = await approvedVerification(verificationData);
-      console.log(res);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  //   try {
+  //     const res = await approvedVerification(verificationData);
+  //     console.log(res);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
   return (
     <>
       {pathName === "/admin/user-management" && (
@@ -987,7 +1017,7 @@ export default function UserSidebar() {
                       }`}
                       disabled={isLoading}
                       onClick={() =>
-                        handleAction(selectedAction, reportDetails?.id)
+                        handleAction(selectedAction, reportDetails)
                       }
                     >
                       {isLoading ? `${selectedAction}.....` : selectedAction}
