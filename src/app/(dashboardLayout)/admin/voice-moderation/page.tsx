@@ -46,6 +46,7 @@ export default function VoiceModeration() {
     selectId ? { id: selectId } : skipToken
   );
 
+  console.log(data);
   useEffect(() => {
     if (moderationDetails) {
       receivedModerationDetails(moderationDetails);

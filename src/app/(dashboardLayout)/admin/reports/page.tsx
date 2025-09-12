@@ -57,7 +57,7 @@ export default function Reports() {
   const itemsPerPage = 10;
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState<Date | undefined>(undefined);
-
+  console.log("reported ..............", reports);
   // Filter based on status tab
   const filteredReports = reports.filter((report) => {
     if (filter === "All") return true;

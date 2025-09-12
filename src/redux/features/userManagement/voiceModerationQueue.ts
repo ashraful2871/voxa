@@ -12,8 +12,8 @@ const voiceModerationApi = baseApi.injectEndpoints({
     makeSafe: builder.mutation({
       query: (params) => {
         return {
-          url: `/admin/voice-moderation-action`,
-          method: "POST",
+          url: `/admin/report-make-safe`,
+          method: "PATCH",
           body: params,
         };
       },

@@ -39,6 +39,7 @@ import {
 import { toast } from "sonner";
 import Link from "next/link";
 import { useApprovedVerificationMutation } from "@/redux/features/userManagement/verification-details";
+import { User } from "lucide-react";
 
 export default function UserSidebar() {
   const [userData, setUserData] = useState<any>(getUserData());
@@ -48,7 +49,7 @@ export default function UserSidebar() {
   const [verificationDetails, setVerificationDetails] = useState<any>(
     getVerificationData()
   );
-  const [makeSafe] = useMakeSafeMutation();
+  const [makeSafe, { isLoading }] = useMakeSafeMutation();
   const [issueWarning] = useIssuesWarningMutation();
   const [approvedVerification] = useApprovedVerificationMutation();
   const [reportDetails, setReportDetails] = useState<any>(getReportData());
@@ -56,10 +57,13 @@ export default function UserSidebar() {
     getReportData()
   );
 
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [selectedAction, setSelectedAction] = useState<null | string>(null);
+
   const pathName = usePathname();
   console.log(pathName);
 
-  console.log(subscriptionDetails);
+  console.log(reportDetails);
 
   useEffect(() => {
     const handleUserUpdate = () => {
@@ -152,19 +156,63 @@ export default function UserSidebar() {
     console.log(id);
     const makeSafeData = {
       reportId: id,
-      action: "DISMISSED",
     };
-
-    console.log(makeSafeData);
 
     try {
       const res = await makeSafe(makeSafeData);
+
       if (res?.data?.success) {
-        toast.success("user Make Safe Successfully");
+        toast.success("Report has been marked as safe");
+        setShowConfirm(false);
+      }
+      if (!res?.data?.success) {
+        toast.success("Report is already dismissed");
+        setShowConfirm(false);
       }
     } catch (error) {
       console.log(error);
       toast.error("something WntWrong");
+    }
+  };
+  const handleIssueWarning = async (id: string) => {
+    console.log(id);
+    const issueWarningData = {
+      reportId: id,
+    };
+
+    try {
+      const res = await issueWarning(issueWarningData);
+      console.log(res);
+      if (res?.data?.success) {
+        toast.success("Warning issued successfully");
+        setShowConfirm(false);
+      }
+      if (!res?.data?.success) {
+        toast.warning("Report is already dismissed");
+        setShowConfirm(false);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("something WntWrong");
+    }
+  };
+
+  const handleAction = (action: string | null, id: string | undefined) => {
+    if (!action || !id) return;
+
+    switch (action) {
+      case "Mark as Safe":
+        handleMakeSafe(id);
+        break;
+      case "Issue Warning":
+        handleIssueWarning(id);
+        break;
+      // case "Temporary Suspend":
+      //   handleTemporarySuspend(id);
+      //   break;
+      // case "Permanent Ban":
+      //   handlePermanentBan(id);
+      //   break;
     }
   };
 
@@ -745,11 +793,21 @@ export default function UserSidebar() {
               </div>
             </div>
 
-            {/* Plan */}
-            <p className="text-sm font-me text-secondary border-b border-secondary pb-3">
+            {/* Plan + Subscription End */}
+            <p className="text-sm font-medium text-secondary border-b border-secondary pb-3">
               <span className="text-warning">
                 {reportDetails?.reported?.voxaPlanType || "Free Plan"}
-              </span>
+              </span>{" "}
+              - End in{" "}
+              {reportDetails?.reported?.subscriptionUser?.subscriptionEnd
+                ? new Date(
+                    reportDetails?.reported?.subscriptionUser?.subscriptionEnd
+                  ).toLocaleDateString("en-US", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })
+                : "N/A"}
             </p>
 
             {/* Scrollable Content */}
@@ -757,103 +815,192 @@ export default function UserSidebar() {
               {/* Location */}
               <div className="flex gap-2 my-1 items-center text-secondary">
                 <MdOutlineLocationOn className="text-2xl" />
-                <p className="text-secondary font-medium text-sm">
+                <p className="font-medium text-sm">
                   {reportDetails?.reported?.location || "Unknown Location"}
                 </p>
               </div>
 
-              {/* Report Reason */}
-              <div className="flex gap-2 my-1 items-center text-secondary">
-                <FaHashtag className="text-xl" />
-                <p className="text-secondary font-medium text-sm">
-                  Report Reason: {reportDetails?.reason?.title || "N/A"}
-                </p>
-              </div>
-
-              {/* Report Status */}
+              {/* Reported At */}
               <div className="flex gap-2 my-1 items-center text-secondary">
                 <MdOutlineWatchLater className="text-xl" />
-                <p className="text-secondary font-medium text-sm">
-                  Report Status: {reportDetails?.status || "N/A"}
+                <p className="font-medium text-sm">
+                  Reported:{" "}
+                  {reportDetails?.createdAt
+                    ? new Date(reportDetails?.createdAt).toLocaleString(
+                        "en-US",
+                        {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )
+                    : "N/A"}
                 </p>
               </div>
 
-              {/* Identity Verification */}
+              {/* Reporter */}
               <div className="flex gap-2 my-1 items-center text-secondary">
-                <IoCalendarClearOutline className="text-xl" />
-                <p className="text-secondary font-medium text-sm">
-                  Identity Verification:{" "}
-                  {reportDetails?.reported?.identityVerification?.status ||
-                    "N/A"}
+                <User className="text-xl" />
+                <p className="font-medium text-sm ">
+                  By:{" "}
+                  <span className="text-red-500">
+                    {reportDetails?.reporter?.name || "Anonymous"}
+                  </span>
                 </p>
               </div>
 
-              {/* Income Verification */}
+              {/* ID Verified */}
               <div className="flex gap-2 my-1 items-center text-secondary">
                 <IoCalendarClearOutline className="text-xl" />
-                <p className="text-secondary font-medium text-sm">
-                  Income Verification:{" "}
-                  {reportDetails?.reported?.incomeVerification?.status || "N/A"}
+                <p className="font-medium text-sm">
+                  ID Verified:{" "}
+                  {reportDetails?.reported?.isIdentityImageVerified
+                    ? "Yes"
+                    : "No"}
                 </p>
               </div>
 
-              {/* Subscription Ends */}
+              {/* Income Verified */}
               <div className="flex gap-2 my-1 items-center text-secondary">
                 <IoCalendarClearOutline className="text-xl" />
-                <p className="text-secondary font-medium text-sm">
-                  Subscription Ends:{" "}
-                  {reportDetails?.reported?.subscriptionUser?.subscriptionEnd ||
-                    "N/A"}
+                <p className="font-medium text-sm">
+                  Income Verified:{" "}
+                  {reportDetails?.reported?.isIncomeImageVerified
+                    ? "Yes"
+                    : "No"}
                 </p>
               </div>
 
-              {/* Reporter Name */}
-              <div className="flex gap-2 my-1 items-center text-secondary">
-                <IoCalendarClearOutline className="text-xl" />
+              {/* Report Subject */}
+              <div className="my-2">
                 <p className="text-secondary font-medium text-sm">
-                  Reported By: {reportDetails?.reporter?.name || "Anonymous"}
+                  Report Subject:{" "}
+                  <span className="font-bold">
+                    {reportDetails?.reason?.title || "N/A"}
+                  </span>
                 </p>
               </div>
 
-              {/* Report Created Date */}
-              <div className="flex gap-2 my-1 items-center text-secondary">
-                <IoCalendarClearOutline className="text-xl" />
+              {/* Profile Photos */}
+              <div className="my-2">
                 <p className="text-secondary font-medium text-sm">
-                  Reported At: {reportDetails?.createdAt || "N/A"}
+                  Profile Photos: (
+                  {reportDetails?.reported?.profileImages?.length || 0}{" "}
+                  uploaded)
                 </p>
+                <div className="flex gap-2 mt-2">
+                  {reportDetails?.reported?.profileImages?.map((img, idx) => (
+                    <Image
+                      key={idx}
+                      src={img}
+                      alt={`Profile ${idx}`}
+                      height={40}
+                      width={40}
+                      className="rounded-md"
+                    />
+                  ))}
+                </div>
               </div>
 
-              {/* Reviewed Info */}
-              <div className="flex gap-2 my-1 items-center text-secondary">
-                <IoCalendarClearOutline className="text-xl" />
-                <p className="text-secondary font-medium text-sm">
-                  Reviewed By: {reportDetails?.reviewedBy || "Not Reviewed"}
-                </p>
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-2 my-1 items-center text-secondary">
-                <IoCalendarClearOutline className="text-xl" />
-                <p className="text-secondary font-medium text-sm">
-                  Action Taken: {reportDetails?.actions?.[0]?.type || "N/A"}
+              {/* Bio */}
+              <div className="my-2">
+                <p className="text-secondary font-medium text-sm">Bio:</p>
+                <p className="text-white text-xs mt-1">
+                  {reportDetails?.reported?.bio || "No bio available."}
                 </p>
               </div>
             </div>
 
-            {/* Buttons naturally at bottom */}
-            <div className="space-y-2">
-              <Button
-                variant={"outline"}
-                className="!text-[#00E04B] font-bold w-full"
-              >
-                Approve Verification
-              </Button>
-              <Button
-                variant={"outline"}
-                className="!text-[#E02200] font-bold w-full"
-              >
-                Reject Submission
-              </Button>
+            {/* Buttons at bottom */}
+            <div className="mt-auto space-y-2">
+              {!showConfirm ? (
+                // 👉 Action Buttons (default view)
+                <>
+                  <Button
+                    variant="outline"
+                    className="!text-[#00E04B] font-bold w-full"
+                    onClick={() => {
+                      setSelectedAction("Mark as Safe");
+                      setShowConfirm(true);
+                    }}
+                  >
+                    Mark as Safe
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    className="!text-[#E08A00] font-bold w-full"
+                    onClick={() => {
+                      setSelectedAction("Issue Warning");
+                      setShowConfirm(true);
+                    }}
+                  >
+                    Issue Warning
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    className="!text-[#E02200] font-bold w-full"
+                    onClick={() => {
+                      setSelectedAction("Temporary Suspend");
+                      setShowConfirm(true);
+                    }}
+                  >
+                    Temporary Suspend
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    className="!text-[#E02200] font-bold w-full"
+                    onClick={() => {
+                      setSelectedAction("Permanent Ban");
+                      setShowConfirm(true);
+                    }}
+                  >
+                    Permanent Ban
+                  </Button>
+                </>
+              ) : (
+                // 👉 Confirmation Box (replaces buttons)
+                <div className="text-white bg-[#292928] py-3 rounded-xl">
+                  <div className="space-y-2 text-center">
+                    <h1 className="text-xl">{selectedAction}</h1>
+                    <p className="text-xs">
+                      You are about to {selectedAction?.toLowerCase()} this
+                      user. This action cannot be undone.
+                    </p>
+                  </div>
+
+                  <div className="bg-[#131312] w-52 mt-2 m-auto rounded-xl">
+                    <Button
+                      variant="outline"
+                      className={`font-bold w-full ${
+                        selectedAction === "Mark as Safe"
+                          ? "!text-[#00E04B]"
+                          : selectedAction === "Issue Warning"
+                          ? "!text-[#E08A00]"
+                          : "!text-[#E02200]"
+                      }`}
+                      disabled={isLoading}
+                      onClick={() =>
+                        handleAction(selectedAction, reportDetails?.id)
+                      }
+                    >
+                      {isLoading ? `${selectedAction}.....` : selectedAction}
+                    </Button>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    className="font-bold w-full"
+                    onClick={() => setShowConfirm(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
