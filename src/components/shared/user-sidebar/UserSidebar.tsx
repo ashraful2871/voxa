@@ -891,16 +891,18 @@ export default function UserSidebar() {
                   uploaded)
                 </p>
                 <div className="flex gap-2 mt-2">
-                  {reportDetails?.reported?.profileImages?.map((img, idx) => (
-                    <Image
-                      key={idx}
-                      src={img}
-                      alt={`Profile ${idx}`}
-                      height={40}
-                      width={40}
-                      className="rounded-md"
-                    />
-                  ))}
+                  {reportDetails?.reported?.profileImages?.map(
+                    (img: string, idx: number) => (
+                      <Image
+                        key={idx}
+                        src={img}
+                        alt={`Profile ${idx}`}
+                        height={40}
+                        width={40}
+                        className="rounded-md"
+                      />
+                    )
+                  )}
                 </div>
               </div>
 
