@@ -512,7 +512,7 @@ export default function UserSidebar() {
     const verificationData = {
       verificationId: id,
       // type: "income",
-      type: type,
+      type: type?.toLocaleLowerCase(),
 
       status: "VERIFIED",
     };
@@ -543,8 +543,8 @@ export default function UserSidebar() {
       verificationId: id,
 
       // type: "income",
-      type: "identity",
-      // type: type,
+      // type: "identity",
+      type: type?.toLocaleLowerCase(),
 
       status: "REJECTED",
       rejectionReason: rejectReason,
