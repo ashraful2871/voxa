@@ -37,6 +37,17 @@ const voiceModerationApi = baseApi.injectEndpoints({
         };
       },
     }),
+
+    //voice moderation api
+    voiceModerationAction: builder.mutation({
+      query: (params) => {
+        return {
+          url: `/admin/voice-moderation-action`,
+          method: "POST",
+          body: params,
+        };
+      },
+    }),
   }),
 });
 
@@ -45,4 +56,5 @@ export const {
   useMakeSafeMutation,
   useIssuesWarningMutation,
   useTemporarySuspendMutation,
+  useVoiceModerationActionMutation,
 } = voiceModerationApi;

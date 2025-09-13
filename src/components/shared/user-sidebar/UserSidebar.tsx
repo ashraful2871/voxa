@@ -35,6 +35,7 @@ import { FaMoneyCheckAlt } from "react-icons/fa";
 import {
   useIssuesWarningMutation,
   useMakeSafeMutation,
+  useVoiceModerationActionMutation,
 } from "@/redux/features/userManagement/voiceModerationQueue";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -53,6 +54,8 @@ export default function UserSidebar() {
   const [makeSafe, { isLoading }] = useMakeSafeMutation();
   const [issueWarning] = useIssuesWarningMutation();
   const [temporaryBand] = useTemporaryBandMutation();
+  const [voiceModerationAction, { isLoading: ModerationLoading }] =
+    useVoiceModerationActionMutation();
   const [approvedVerification] = useApprovedVerificationMutation();
   const [reportDetails, setReportDetails] = useState<any>(getReportData());
   const [subscriptionDetails, setSubscriptionDetails] = useState<any>(
@@ -153,7 +156,7 @@ export default function UserSidebar() {
   const verificationUserDetails = JSON.parse(verificationUser);
   console.log(verificationUserDetails);
 
-  //actions make safe
+  //report- actions make safe
   const handleMakeSafe = async (id: string) => {
     console.log(id);
     const makeSafeData = {
@@ -177,7 +180,7 @@ export default function UserSidebar() {
     }
   };
 
-  //issue warning
+  //report- issue warning
   const handleIssueWarning = async (id: string) => {
     console.log(id);
     const issueWarningData = {
@@ -201,7 +204,7 @@ export default function UserSidebar() {
     }
   };
 
-  //temporary suspend
+  //report- temporary suspend
   const handleTemporarySuspend = async (id: string) => {
     const suspendData = {
       reportId: id,
@@ -225,7 +228,7 @@ export default function UserSidebar() {
     }
   };
 
-  //PERMANENT BAND
+  //report-  PERMANENT BAND
   const handlePermanentBan = async (id: string) => {
     const bandData = {
       reportId: id,
@@ -248,6 +251,7 @@ export default function UserSidebar() {
     }
   };
 
+  // report handle Action
   const handleAction = (action: string | null, info: any | undefined) => {
     if (!action || !info) return;
 
@@ -267,24 +271,131 @@ export default function UserSidebar() {
     }
   };
 
-  // //approved
-  // const handleApprovedVerification = async (id: string) => {
-  //   const verificationData = {
-  //     userId: id,
+  // voiceModeration- make safe
+  const handleVoiceMakeSafe = async (id: string) => {
+    const makeSafeData = {
+      reportId: id,
+      action: "DISMISSED",
+    };
 
-  //     type: "identity",
-  //     // "status": "VERIFIED"
-  //     status: "VERIFIED",
-  //   };
-  //   console.log(verificationData);
+    try {
+      const res = await voiceModerationAction(makeSafeData);
 
-  //   try {
-  //     const res = await approvedVerification(verificationData);
-  //     console.log(res);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+      if (res?.data?.success) {
+        toast.success("Voice report processed successfully");
+        setShowConfirm(false);
+      }
+
+      if (!res?.data?.success) {
+        toast.warning("something went wrong");
+        setShowConfirm(false);
+      }
+    } catch (error) {
+      toast.error("something went wrong");
+      console.log(error);
+      setShowConfirm(false);
+    }
+  };
+  // voiceModeration- issue warning
+  const handleVoiceIssueWarning = async (id: string) => {
+    const issueWarningData = {
+      reportId: id,
+      action: "WARNED",
+    };
+
+    try {
+      const res = await voiceModerationAction(issueWarningData);
+
+      if (res?.data?.success) {
+        toast.success("Voice report processed successfully");
+        setShowConfirm(false);
+      }
+
+      if (!res?.data?.success) {
+        toast.warning("something went wrong");
+        setShowConfirm(false);
+      }
+    } catch (error) {
+      toast.error("something went wrong");
+      console.log(error);
+      setShowConfirm(false);
+    }
+  };
+
+  // voiceModeration- temporary suspend warning
+  const handleVoiceTemporarySuspend = async (id: string) => {
+    const suspendData = {
+      reportId: id,
+      action: "SUSPENDED",
+    };
+
+    try {
+      const res = await voiceModerationAction(suspendData);
+
+      if (res?.data?.success) {
+        toast.success("Voice suspended successfully");
+        setShowConfirm(false);
+      }
+
+      if (!res?.data?.success) {
+        toast.warning(res?.error?.data?.message || "something went wrong");
+        setShowConfirm(false);
+      }
+    } catch (error) {
+      toast.error("something went wrong");
+      console.log(error);
+      setShowConfirm(false);
+    }
+  };
+  // voiceModeration- temporary suspend warning
+  const handleVoicePermanentBand = async (id: string) => {
+    const bandedData = {
+      reportId: id,
+      action: "BANNED",
+    };
+
+    try {
+      const res = await voiceModerationAction(bandedData);
+
+      if (res?.data?.success) {
+        toast.success("Voice permanent Banded successfully");
+        setShowConfirm(false);
+      }
+
+      if (!res?.data?.success) {
+        toast.warning(res?.error?.data?.message || "something went wrong");
+        setShowConfirm(false);
+      }
+    } catch (error) {
+      toast.error("something went wrong");
+      console.log(error);
+      setShowConfirm(false);
+    }
+  };
+
+  // voiceModeration Action
+  const handleModerationAction = (
+    action: string | null,
+    info: any | undefined
+  ) => {
+    if (!action || !info) return;
+
+    switch (action) {
+      case "Mark as Safe":
+        handleVoiceMakeSafe(info?.id);
+        break;
+      case "Issue Warning":
+        handleVoiceIssueWarning(info?.id);
+        break;
+      case "Temporary Suspend":
+        handleVoiceTemporarySuspend(info?.id);
+        break;
+      case "Permanent Ban":
+        handleVoicePermanentBand(info?.id);
+        break;
+    }
+  };
+
   return (
     <>
       {pathName === "/admin/user-management" && (
@@ -503,7 +614,7 @@ export default function UserSidebar() {
             {/* Name + Icons */}
             <div className="flex justify-between items-center mt-3">
               <h2 className="text-xl font-bold text-white">
-                {moderationDetails?.sender?.name || "VOXA User"}
+                {moderationDetails?.sender?.name || "VOXA User"}{" "}
               </h2>
               <div className="flex gap-2">
                 <FaCircleCheck className="text-lg text-white" />
@@ -512,16 +623,28 @@ export default function UserSidebar() {
             </div>
 
             {/* Plan */}
-            <p className="text-sm font-medium text-secondary border-b border-secondary pb-3">
+            <p className="text-sm font-medium text-secondary border-b border-secondary pb-3 flex gap-1 items-center">
               <span className="text-warning">
                 {moderationDetails?.sender?.voxaPlanType || "Free Plan"}
               </span>
               {" - "}
-              {moderationDetails?.sender?.subscriptionUser?.subscriptionEnd
-                ? `End: ${new Date(
+
+              <span>
+                {moderationDetails?.status === "SUSPENDED" ? (
+                  <span className="text-red-500 text-xs">
+                    Suspended ({moderationDetails?.suspensionTimeLeft}h left)
+                  </span>
+                ) : moderationDetails?.status === "BANNED" ? (
+                  <span className="text-red-500 text-xs">Permanent Banned</span>
+                ) : moderationDetails?.sender?.subscriptionUser
+                    ?.subscriptionEnd ? (
+                  `End: ${new Date(
                     moderationDetails?.sender?.subscriptionUser?.subscriptionEnd
                   ).toLocaleDateString()}`
-                : "N/A"}
+                ) : (
+                  "N/A"
+                )}
+              </span>
             </p>
 
             {/* Scrollable Info */}
@@ -622,32 +745,117 @@ export default function UserSidebar() {
 
             {/* Actions */}
             <div className="mt-auto space-y-2">
-              <Button
-                onClick={() => handleMakeSafe(moderationDetails?.id)}
-                variant={"outline"}
-                className="!text-[#00E04B] font-bold w-full"
-              >
-                Mark as Safe
-              </Button>
-              <Button
-                onClick={() => handleIssuesWarning(moderationDetails?.senderId)}
-                variant={"outline"}
-                className="!text-[#E08A00] font-bold w-full"
-              >
-                Issue Warning
-              </Button>
-              <Button
-                variant={"outline"}
-                className="!text-[#E02200] font-bold w-full"
-              >
-                Temporary Suspend
-              </Button>
-              <Button
-                variant={"outline"}
-                className="!text-[#E02200] font-bold w-full"
-              >
-                Permanent Ban
-              </Button>
+              {!showConfirm ? (
+                // 👉 Action Buttons (default view)
+                <>
+                  {moderationDetails?.status === "SUSPENDED" ? (
+                    <Button
+                      variant="outline"
+                      className="!text-[#ffff] font-bold w-full"
+                      onClick={() => {
+                        setSelectedAction("Remove Suspend");
+                        setShowConfirm(true);
+                      }}
+                    >
+                      Remove Suspend
+                    </Button>
+                  ) : moderationDetails?.status === "BANNED" ? (
+                    <Button
+                      variant="outline"
+                      className="!text-[#ffff] font-bold w-full"
+                      onClick={() => {
+                        setSelectedAction("Reinstate User");
+                        setShowConfirm(true);
+                      }}
+                    >
+                      Reinstate User
+                    </Button>
+                  ) : (
+                    <>
+                      <Button
+                        variant="outline"
+                        className="!text-[#00E04B] font-bold w-full"
+                        onClick={() => {
+                          setSelectedAction("Mark as Safe");
+                          setShowConfirm(true);
+                        }}
+                      >
+                        Mark as Safe
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        className="!text-[#E08A00] font-bold w-full"
+                        onClick={() => {
+                          setSelectedAction("Issue Warning");
+                          setShowConfirm(true);
+                        }}
+                      >
+                        Issue Warning
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        className="!text-[#E02200] font-bold w-full"
+                        onClick={() => {
+                          setSelectedAction("Temporary Suspend");
+                          setShowConfirm(true);
+                        }}
+                      >
+                        Temporary Suspend
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        className="!text-[#E02200] font-bold w-full"
+                        onClick={() => {
+                          setSelectedAction("Permanent Ban");
+                          setShowConfirm(true);
+                        }}
+                      >
+                        Permanent Ban
+                      </Button>
+                    </>
+                  )}
+                </>
+              ) : (
+                // 👉 Confirmation Box
+                <div className="text-white bg-[#292928] py-3 rounded-xl">
+                  <div className="space-y-2 text-center">
+                    <h1 className="text-xl">{selectedAction}</h1>
+                    <p className="text-xs">
+                      You are about to {selectedAction?.toLowerCase()} this
+                      user. This action cannot be undone.
+                    </p>
+                  </div>
+
+                  <div className="bg-[#131312] w-52 mt-2 m-auto rounded-xl">
+                    <Button
+                      variant="outline"
+                      className="font-bold w-full"
+                      disabled={ModerationLoading}
+                      onClick={() =>
+                        handleModerationAction(
+                          selectedAction,
+                          moderationDetails
+                        )
+                      }
+                    >
+                      {ModerationLoading
+                        ? `${selectedAction}.....`
+                        : selectedAction}
+                    </Button>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    className="font-bold w-full"
+                    onClick={() => setShowConfirm(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
