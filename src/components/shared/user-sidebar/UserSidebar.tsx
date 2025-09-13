@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
@@ -40,7 +39,6 @@ import {
 } from "@/redux/features/userManagement/voiceModerationQueue";
 import { toast } from "sonner";
 import Link from "next/link";
-import { useApprovedVerificationMutation } from "@/redux/features/userManagement/verification-details";
 import { User } from "lucide-react";
 import { useProcessReportMutation } from "@/redux/features/userManagement/reportsDetailsApi";
 import { format } from "date-fns";
@@ -59,7 +57,6 @@ export default function UserSidebar() {
   const [voiceModerationAction, { isLoading: ModerationLoading }] =
     useVoiceModerationActionMutation();
   const [removeSuspendAndBanned] = useRemoveSuspendAndBannedMutation();
-  const [approvedVerification] = useApprovedVerificationMutation();
   const [reportDetails, setReportDetails] = useState<any>(getReportData());
   const [subscriptionDetails, setSubscriptionDetails] = useState<any>(
     getReportData()
@@ -222,7 +219,7 @@ export default function UserSidebar() {
         setShowConfirm(false);
       }
       if (!res.data?.success) {
-        toast.warning(res?.error?.data?.message || "something went wrong");
+        toast.warning("something went wrong");
         setShowConfirm(false);
       }
     } catch (error) {
@@ -245,7 +242,7 @@ export default function UserSidebar() {
         setShowConfirm(false);
       }
       if (!res.data?.success) {
-        toast.warning(res?.error?.data?.message || "something went wrong");
+        toast.warning("something went wrong");
         setShowConfirm(false);
       }
     } catch (error) {
@@ -341,7 +338,7 @@ export default function UserSidebar() {
       }
 
       if (!res?.data?.success) {
-        toast.warning(res?.error?.data?.message || "something went wrong");
+        toast.warning("something went wrong");
         setShowConfirm(false);
       }
     } catch (error) {
@@ -366,7 +363,7 @@ export default function UserSidebar() {
       }
 
       if (!res?.data?.success) {
-        toast.warning(res?.error?.data?.message || "something went wrong");
+        toast.warning("something went wrong");
         setShowConfirm(false);
       }
     } catch (error) {
@@ -376,8 +373,51 @@ export default function UserSidebar() {
     }
   };
 
-  const handleModerationRemoveSuspend = (id: string) => {
+  //removed suspended
+  const handleModerationRemoveSuspend = async (id: string) => {
+    const suspendedData = {
+      id: id,
+      action: "SUSPENDED",
+    };
     console.log(id);
+    try {
+      const res = await removeSuspendAndBanned(suspendedData);
+      if (res?.data?.success) {
+        toast.success("Suspension removed successfully");
+        setShowConfirm(false);
+      }
+      if (!res?.data?.success) {
+        toast.warning("something went wrong");
+        setShowConfirm(false);
+      }
+    } catch (error) {
+      console.log(error);
+      setShowConfirm(false);
+    }
+  };
+
+  //removed banned
+  const handleModerationRemoveBanned = async (id: string) => {
+    const banedData = {
+      id: id,
+      action: "BANNED",
+    };
+    console.log(id);
+    try {
+      const res = await removeSuspendAndBanned(banedData);
+      console.log(res);
+      if (res?.data?.success) {
+        toast.success("Banned removed successfully");
+        setShowConfirm(false);
+      }
+      if (!res?.data?.success) {
+        toast.warning("something went wrong");
+        setShowConfirm(false);
+      }
+    } catch (error) {
+      console.log(error);
+      setShowConfirm(false);
+    }
   };
 
   // voiceModeration Action
@@ -402,6 +442,9 @@ export default function UserSidebar() {
         break;
       case "Remove Suspend":
         handleModerationRemoveSuspend(info?.sender?.id);
+        break;
+      case "Reinstate User":
+        handleModerationRemoveBanned(info?.sender?.id);
         break;
     }
   };
@@ -997,9 +1040,6 @@ export default function UserSidebar() {
             {/* Buttons */}
             <div className="mt-auto space-y-2  border-t border-secondary pt-3">
               <Button
-                onClick={() =>
-                  handleApprovedVerification(verificationDetails?.id)
-                }
                 variant={"outline"}
                 className="!text-[#00E04B] font-bold w-full"
               >

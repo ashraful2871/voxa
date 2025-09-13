@@ -63,9 +63,10 @@ export default function VoiceModeration() {
       })
       .filter((user: any) => {
         if (selectedTab === "tab-1") return true;
-        if (selectedTab === "tab-2") return user.status === "PENDING";
+        if (selectedTab === "tab-2") return user.status === "WARNED";
         if (selectedTab === "tab-3") return user.status === "SUSPENDED";
         if (selectedTab === "tab-4") return user.status === "BANNED";
+
         return true;
       }) || [];
 

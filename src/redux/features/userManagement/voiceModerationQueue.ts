@@ -49,11 +49,11 @@ const voiceModerationApi = baseApi.injectEndpoints({
       },
     }),
     removeSuspendAndBanned: builder.mutation({
-      query: ({ id, body }) => {
+      query: ({ id, action }) => {
         return {
           url: `/admin/remove-restriction/${id}`,
-          method: "POST",
-          body: body,
+          method: "PATCH",
+          body: { action },
         };
       },
     }),

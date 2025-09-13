@@ -33,15 +33,26 @@ import PageLoading from "@/components/shared/PageLoading";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useSubscriptionDetailsQuery } from "@/redux/features/userManagement/subscriptionDetailsApi";
 import { receivedSubscriptionDetails } from "@/utils/receivedSubscriptionDetails";
+import {
+  useAllSubscriptionPlansQuery,
+  useSubscriptionPlanDetailsQuery,
+} from "@/redux/features/userManagement/subscriptionPlansapi";
 
 export default function Subscriptions() {
   const [selectId, setSelectId] = useState<string | null>(null);
+  const [planId, setPlanId] = useState<string | null>(null);
   const { data, isLoading, isError } =
     useSubscriptionManagementQuery(undefined);
-
+  const { data: subscriptions } = useAllSubscriptionPlansQuery(undefined);
+  console.log(subscriptions);
   const { data: subscriptionDetails } = useSubscriptionDetailsQuery(
     selectId ? { id: selectId } : skipToken
   );
+
+  const { data: planDetails } = useSubscriptionPlanDetailsQuery(
+    planId ? { id: planId } : skipToken
+  );
+  console.log(planDetails);
 
   useEffect(() => {
     if (subscriptionDetails) {
@@ -52,7 +63,6 @@ export default function Subscriptions() {
   const [filter, setFilter] = useState<string>("All");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState<Date | undefined>(undefined);
 
@@ -105,6 +115,11 @@ export default function Subscriptions() {
     console.log(id);
   };
 
+  const handlePlanDetails = async (id: string) => {
+    console.log(id);
+    setPlanId(id);
+  };
+
   if (isLoading) {
     return <PageLoading></PageLoading>;
   }
@@ -114,18 +129,21 @@ export default function Subscriptions() {
       <div className="w-full max-w-7xl mx-auto">
         {/* Plans Section */}
         <div className="grid xl:grid-cols-12 lg:grid-cols-6 gap-9 mb-10">
-          <div className="col-span-3 border py-5 px-5 border-secondary rounded-lg bg-foreground">
-            <h2 className="text-white font-bold">Monthly</h2>
-            <p className="text-3xl text-white font-light">$9.99</p>
-          </div>
-          <div className="col-span-3 border py-5 px-5 border-secondary rounded-lg bg-foreground">
-            <h2 className="text-white font-bold">Quarterly</h2>
-            <p className="text-3xl text-white font-light">$24.99</p>
-          </div>
-          <div className="col-span-3 border py-5 px-5 border-secondary rounded-lg bg-foreground">
-            <h2 className="text-white font-bold">Annual</h2>
-            <p className="text-3xl text-white font-light">$99.99</p>
-          </div>
+          {subscriptions?.data.map((subscription: any, idx: number) => (
+            <>
+              <div
+                onClick={() => handlePlanDetails(subscription?.stripePriceId)}
+                key={idx}
+                className="col-span-3 border py-5 px-5 border-secondary rounded-lg bg-foreground cursor-pointer"
+              >
+                <h2 className="text-white font-bold">{subscription?.type}</h2>
+                <p className="text-3xl text-white font-light">
+                  ${subscription?.price}
+                </p>
+              </div>
+            </>
+          ))}
+
           <div className="col-span-3 py-5 px-5 border border-secondary rounded-lg bg-foreground flex flex-col items-center justify-center gap-2">
             <FiPlus className="text-warning text-2xl" />
             <p className="font-bold text-white">Add New Plan</p>
