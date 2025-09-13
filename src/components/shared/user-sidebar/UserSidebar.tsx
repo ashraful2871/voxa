@@ -250,6 +250,52 @@ export default function UserSidebar() {
       setShowConfirm(false);
     }
   };
+  //removed suspended
+  const handleReportRemoveSuspend = async (id: string) => {
+    const suspendedData = {
+      id: id,
+      action: "SUSPENDED",
+    };
+    console.log(id);
+    try {
+      const res = await removeSuspendAndBanned(suspendedData);
+      if (res?.data?.success) {
+        toast.success("Suspension removed successfully");
+        setShowConfirm(false);
+      }
+      if (!res?.data?.success) {
+        toast.warning("something went wrong");
+        setShowConfirm(false);
+      }
+    } catch (error) {
+      console.log(error);
+      setShowConfirm(false);
+    }
+  };
+
+  //removed banned
+  const handleReportRemoveBanned = async (id: string) => {
+    const banedData = {
+      id: id,
+      action: "BANNED",
+    };
+    console.log(id);
+    try {
+      const res = await removeSuspendAndBanned(banedData);
+      console.log(res);
+      if (res?.data?.success) {
+        toast.success("Banned removed successfully");
+        setShowConfirm(false);
+      }
+      if (!res?.data?.success) {
+        toast.warning("something went wrong");
+        setShowConfirm(false);
+      }
+    } catch (error) {
+      console.log(error);
+      setShowConfirm(false);
+    }
+  };
 
   // report handle Action
   const handleAction = (action: string | null, info: any | undefined) => {
@@ -267,6 +313,12 @@ export default function UserSidebar() {
         break;
       case "Permanent Ban":
         handlePermanentBan(info?.id);
+        break;
+      case "Remove Suspend":
+        handleReportRemoveSuspend(info?.reportedId);
+        break;
+      case "Reinstate User":
+        handleReportRemoveBanned(info?.reportedId);
         break;
     }
   };
