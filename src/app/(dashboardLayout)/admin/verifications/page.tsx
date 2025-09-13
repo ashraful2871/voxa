@@ -74,6 +74,7 @@ export default function Verifications() {
     startIndex,
     startIndex + itemsPerPage
   );
+  console.log(paginatedVerifications);
 
   // Handle page change
   const handlePageChange = (page: number) => setCurrentPage(page);
@@ -85,6 +86,9 @@ export default function Verifications() {
 
   const handleVerificationDetails = (user: any) => {
     setSelectId(user?.userId);
+    console.log(user);
+    localStorage.setItem("verificationId", user?.id);
+    localStorage.setItem("verificationType", user?.type);
     localStorage.setItem("Verification Queue", JSON.stringify(user));
 
     console.log(user);

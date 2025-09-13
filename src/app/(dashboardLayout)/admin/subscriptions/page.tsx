@@ -60,6 +60,12 @@ export default function Subscriptions() {
     }
   }, [subscriptionDetails]);
 
+  useEffect(() => {
+    if (planDetails) {
+      receivedSubscriptionDetails(planDetails);
+    }
+  }, [planDetails]);
+
   const [filter, setFilter] = useState<string>("All");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;

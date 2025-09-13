@@ -42,9 +42,11 @@ import Link from "next/link";
 import { User } from "lucide-react";
 import { useProcessReportMutation } from "@/redux/features/userManagement/reportsDetailsApi";
 import { format } from "date-fns";
+import { useApprovedVerificationMutation } from "@/redux/features/userManagement/verification-details";
 
 export default function UserSidebar() {
   const [userData, setUserData] = useState<any>(getUserData());
+  const [rejectReason, setRejectReason] = useState();
   const [moderationDetails, setModerationDetails] = useState<any>(
     getModerationData()
   );
@@ -61,14 +63,14 @@ export default function UserSidebar() {
   const [subscriptionDetails, setSubscriptionDetails] = useState<any>(
     getReportData()
   );
-
+  const [verification] = useApprovedVerificationMutation();
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedAction, setSelectedAction] = useState<null | string>(null);
 
   const pathName = usePathname();
   console.log(pathName);
 
-  console.log(moderationDetails);
+  console.log(verificationDetails);
 
   useEffect(() => {
     const handleUserUpdate = () => {
@@ -501,6 +503,85 @@ export default function UserSidebar() {
     }
   };
 
+  ////////////////verifications
+
+  const handleVerification = async () => {
+    const id = localStorage.getItem("verificationId");
+    const type = localStorage.getItem("verificationType");
+    const verificationData = {
+      verificationId: id,
+      // type: "income",
+      type: type,
+
+      status: "VERIFIED",
+    };
+
+    console.log(verificationData);
+
+    try {
+      const res = await verification(verificationData);
+      console.log(res);
+
+      if (res?.data?.success) {
+        toast.success(res?.data?.message || "update Successfully");
+        setShowConfirm(false);
+      }
+      if (!res?.data?.success) {
+        toast.warning(res?.data?.message || "something went wrong");
+        setShowConfirm(false);
+      }
+    } catch (error) {
+      console.log(error);
+      setShowConfirm(false);
+    }
+  };
+  const handleRejection = async () => {
+    const id = localStorage.getItem("verificationId");
+    const type = localStorage.getItem("verificationType");
+    const rejectionData = {
+      verificationId: id,
+
+      // type: "income",
+      type: "identity",
+      // type: type,
+
+      status: "REJECTED",
+      rejectionReason: rejectReason,
+    };
+
+    console.log(rejectionData);
+
+    try {
+      const res = await verification(rejectionData);
+      console.log(res);
+
+      if (res?.data?.success) {
+        toast.success(res?.data?.message || "Rejected Successfully");
+        setShowConfirm(false);
+      }
+      if (!res?.data?.success) {
+        toast.warning(res?.data?.message || "something went wrong");
+        setShowConfirm(false);
+      }
+    } catch (error) {
+      console.log(error);
+      setShowConfirm(false);
+    }
+  };
+
+  //verification handle Action
+  const handleVerificationAction = (action: string | null) => {
+    if (!action) return;
+
+    switch (action) {
+      case "Approve Verification":
+        handleVerification();
+        break;
+      case "Reject Submission":
+        handleRejection();
+        break;
+    }
+  };
   return (
     <>
       {pathName === "/admin/user-management" && (
@@ -967,7 +1048,7 @@ export default function UserSidebar() {
       )}
       {pathName === "/admin/verifications" && (
         <div className="flex justify-end">
-          <div className="bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg flex flex-col">
+          <div className="h-screen bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg flex flex-col">
             {/* Profile Image */}
             <Image
               src={
@@ -1090,19 +1171,95 @@ export default function UserSidebar() {
             </div>
 
             {/* Buttons */}
-            <div className="mt-auto space-y-2  border-t border-secondary pt-3">
-              <Button
-                variant={"outline"}
-                className="!text-[#00E04B] font-bold w-full"
-              >
-                Approve Verification
-              </Button>
-              <Button
-                variant={"outline"}
-                className="!text-[#E02200] font-bold w-full"
-              >
-                Reject Submission
-              </Button>
+            <div className="mt-auto space-y-2 border-t border-secondary pt-3">
+              {!showConfirm ? (
+                <>
+                  {/* Default Buttons */}
+                  <Button
+                    variant="outline"
+                    className="!text-[#00E04B] font-bold w-full"
+                    onClick={() => {
+                      setSelectedAction("Approve Verification");
+                      setShowConfirm(true);
+                    }}
+                  >
+                    Approve Verification
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    className="!text-[#E02200] font-bold w-full"
+                    onClick={() => {
+                      setSelectedAction("Reject Submission");
+                      setShowConfirm(true);
+                    }}
+                  >
+                    Reject Submission
+                  </Button>
+                </>
+              ) : (
+                // Confirmation Box
+                <div className="text-white bg-[#292928] py-3 rounded-xl">
+                  <div className="space-y-2 text-center">
+                    <h1 className="text-xl">{selectedAction}</h1>
+                    <p className="text-xs">
+                      You are about to {selectedAction?.toLowerCase()} this
+                      request. This action cannot be undone.
+                    </p>
+                  </div>
+
+                  {/* Show dropdown ONLY for Reject Submission */}
+                  {selectedAction === "Reject Submission" && (
+                    <div className="mt-3">
+                      <label className="block text-xs mb-1 text-left px-4">
+                        Select Reject Reason
+                      </label>
+                      <select
+                        className="w-52 m-auto block rounded-lg bg-[#131312] text-white px-3 py-2 text-sm"
+                        value={rejectReason}
+                        onChange={(e) => setRejectReason(e.target.value)}
+                      >
+                        <option value="">Choose a reason</option>
+                        <option value="Document is unclear or blurry">
+                          Document is unclear or blurry
+                        </option>
+                        <option value="Mismatched info">Mismatched info</option>
+                        <option value="Suspicious or falsified document">
+                          Suspicious or falsified document
+                        </option>
+                        <option value="Not sufficient for verification">
+                          Not sufficient for verification
+                        </option>
+                      </select>
+                    </div>
+                  )}
+
+                  <div className="bg-[#131312] w-52 mt-3 m-auto rounded-xl">
+                    <Button
+                      variant="outline"
+                      className="font-bold w-full"
+                      disabled={isLoading}
+                      onClick={() =>
+                        handleVerificationAction(
+                          selectedAction,
+                          reportDetails,
+                          rejectReason
+                        )
+                      }
+                    >
+                      {isLoading ? `${selectedAction}.....` : selectedAction}
+                    </Button>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    className="font-bold w-full"
+                    onClick={() => setShowConfirm(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>

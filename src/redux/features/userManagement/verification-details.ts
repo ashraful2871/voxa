@@ -13,7 +13,7 @@ const verificationDetailsApi = baseApi.injectEndpoints({
       query: (params) => {
         return {
           url: `/admin/update-verification-status`,
-          method: "POST",
+          method: "PATCH",
           body: params,
         };
       },
