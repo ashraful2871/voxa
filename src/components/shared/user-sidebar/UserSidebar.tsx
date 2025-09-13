@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
@@ -46,7 +47,7 @@ import { useApprovedVerificationMutation } from "@/redux/features/userManagement
 
 export default function UserSidebar() {
   const [userData, setUserData] = useState<any>(getUserData());
-  const [rejectReason, setRejectReason] = useState();
+  const [rejectReason, setRejectReason] = useState<string | undefined>();
   const [moderationDetails, setModerationDetails] = useState<any>(
     getModerationData()
   );
@@ -570,7 +571,11 @@ export default function UserSidebar() {
   };
 
   //verification handle Action
-  const handleVerificationAction = (action: string | null) => {
+  const handleVerificationAction = (
+    action: string | null,
+    reportDetails: string | undefined,
+    rejectReason: string | undefined
+  ) => {
     if (!action) return;
 
     switch (action) {
