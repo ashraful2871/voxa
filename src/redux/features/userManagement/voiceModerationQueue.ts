@@ -48,6 +48,15 @@ const voiceModerationApi = baseApi.injectEndpoints({
         };
       },
     }),
+    removeSuspendAndBanned: builder.mutation({
+      query: ({ id, body }) => {
+        return {
+          url: `/admin/remove-restriction/${id}`,
+          method: "POST",
+          body: body,
+        };
+      },
+    }),
   }),
 });
 
@@ -57,4 +66,5 @@ export const {
   useIssuesWarningMutation,
   useTemporarySuspendMutation,
   useVoiceModerationActionMutation,
+  useRemoveSuspendAndBannedMutation,
 } = voiceModerationApi;

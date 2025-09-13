@@ -35,13 +35,15 @@ import { FaMoneyCheckAlt } from "react-icons/fa";
 import {
   useIssuesWarningMutation,
   useMakeSafeMutation,
+  useRemoveSuspendAndBannedMutation,
   useVoiceModerationActionMutation,
 } from "@/redux/features/userManagement/voiceModerationQueue";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useApprovedVerificationMutation } from "@/redux/features/userManagement/verification-details";
 import { User } from "lucide-react";
-import { useTemporaryBandMutation } from "@/redux/features/userManagement/reportsDetailsApi";
+import { useProcessReportMutation } from "@/redux/features/userManagement/reportsDetailsApi";
+import { format } from "date-fns";
 
 export default function UserSidebar() {
   const [userData, setUserData] = useState<any>(getUserData());
@@ -53,9 +55,10 @@ export default function UserSidebar() {
   );
   const [makeSafe, { isLoading }] = useMakeSafeMutation();
   const [issueWarning] = useIssuesWarningMutation();
-  const [temporaryBand] = useTemporaryBandMutation();
+  const [processReport] = useProcessReportMutation();
   const [voiceModerationAction, { isLoading: ModerationLoading }] =
     useVoiceModerationActionMutation();
+  const [removeSuspendAndBanned] = useRemoveSuspendAndBannedMutation();
   const [approvedVerification] = useApprovedVerificationMutation();
   const [reportDetails, setReportDetails] = useState<any>(getReportData());
   const [subscriptionDetails, setSubscriptionDetails] = useState<any>(
@@ -68,7 +71,7 @@ export default function UserSidebar() {
   const pathName = usePathname();
   console.log(pathName);
 
-  console.log(reportDetails);
+  console.log(moderationDetails);
 
   useEffect(() => {
     const handleUserUpdate = () => {
@@ -212,7 +215,7 @@ export default function UserSidebar() {
     };
 
     try {
-      const res = await temporaryBand(suspendData);
+      const res = await processReport(suspendData);
       console.log(res);
       if (res?.data?.success) {
         toast.success("Action taken successfully");
@@ -235,7 +238,7 @@ export default function UserSidebar() {
       action: "banned",
     };
     try {
-      const res = await temporaryBand(bandData);
+      const res = await processReport(bandData);
       console.log(res);
       if (res?.data?.success) {
         toast.success("Action taken successfully");
@@ -373,6 +376,10 @@ export default function UserSidebar() {
     }
   };
 
+  const handleModerationRemoveSuspend = (id: string) => {
+    console.log(id);
+  };
+
   // voiceModeration Action
   const handleModerationAction = (
     action: string | null,
@@ -392,6 +399,9 @@ export default function UserSidebar() {
         break;
       case "Permanent Ban":
         handleVoicePermanentBand(info?.id);
+        break;
+      case "Remove Suspend":
+        handleModerationRemoveSuspend(info?.sender?.id);
         break;
     }
   };
@@ -1005,6 +1015,7 @@ export default function UserSidebar() {
           </div>
         </div>
       )}
+
       {pathName === "/admin/reports" && (
         <div className="flex justify-end">
           <div className="h-screen bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg flex flex-col">
@@ -1032,20 +1043,53 @@ export default function UserSidebar() {
             </div>
 
             {/* Plan + Subscription End */}
-            <p className="text-sm font-medium text-secondary border-b border-secondary pb-3">
+            <p className="text-sm font-medium text-secondary border-b border-secondary pb-3 flex gap-1 items-center">
               <span className="text-warning">
-                {reportDetails?.reported?.voxaPlanType || "Free Plan"}
-              </span>{" "}
-              - End in{" "}
-              {reportDetails?.reported?.subscriptionUser?.subscriptionEnd
-                ? new Date(
+                {reportDetails?.sender?.voxaPlanType || "Free Plan"}
+              </span>
+              {" - "}
+              <span>
+                {reportDetails?.status === "ACTIONED" ? (
+                  reportDetails?.actions?.some(
+                    (action: any) => action.type === "PERMANENT_BAN"
+                  ) ? (
+                    <span className="text-red-500 text-xs">
+                      Permanent Banned
+                    </span>
+                  ) : reportDetails?.actions?.some(
+                      (action: any) => action.type === "TEMPORARY_SUSPENSION"
+                    ) ? (
+                    <span className="text-red-500 text-xs">
+                      Suspended ({reportDetails?.suspensionEndTimeLeft || "N/A"}
+                      h left)
+                    </span>
+                  ) : (
+                    <span className="text-green-500 text-xs">
+                      {
+                        reportDetails?.reported?.subscriptionUser
+                          ?.subscriptionEnd
+                      }
+                    </span>
+                  )
+                ) : reportDetails?.status === "DISMISSED" ? (
+                  <span className=" text-xs">
+                    End in{" "}
+                    {format(
+                      new Date(
+                        reportDetails.reported.subscriptionUser.subscriptionEnd
+                      ),
+                      "dd MMM, yyyy"
+                    )}
+                  </span>
+                ) : reportDetails?.reported?.subscriptionUser
+                    ?.subscriptionEnd ? (
+                  `End: ${new Date(
                     reportDetails?.reported?.subscriptionUser?.subscriptionEnd
-                  ).toLocaleDateString("en-US", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })
-                : "N/A"}
+                  ).toLocaleDateString()}`
+                ) : (
+                  "N/A"
+                )}
+              </span>
             </p>
 
             {/* Scrollable Content */}
@@ -1156,54 +1200,133 @@ export default function UserSidebar() {
             {/* Buttons at bottom */}
             <div className="mt-auto space-y-2">
               {!showConfirm ? (
-                // 👉 Action Buttons (default view)
                 <>
-                  <Button
-                    variant="outline"
-                    className="!text-[#00E04B] font-bold w-full"
-                    onClick={() => {
-                      setSelectedAction("Mark as Safe");
-                      setShowConfirm(true);
-                    }}
-                  >
-                    Mark as Safe
-                  </Button>
+                  {reportDetails?.status === "DISMISSED" ? (
+                    // User is dismissed: show all action buttons
+                    <>
+                      <Button
+                        variant="outline"
+                        className="!text-[#00E04B] font-bold w-full"
+                        onClick={() => {
+                          setSelectedAction("Mark as Safe");
+                          setShowConfirm(true);
+                        }}
+                      >
+                        Mark as Safe
+                      </Button>
 
-                  <Button
-                    variant="outline"
-                    className="!text-[#E08A00] font-bold w-full"
-                    onClick={() => {
-                      setSelectedAction("Issue Warning");
-                      setShowConfirm(true);
-                    }}
-                  >
-                    Issue Warning
-                  </Button>
+                      <Button
+                        variant="outline"
+                        className="!text-[#E08A00] font-bold w-full"
+                        onClick={() => {
+                          setSelectedAction("Issue Warning");
+                          setShowConfirm(true);
+                        }}
+                      >
+                        Issue Warning
+                      </Button>
 
-                  <Button
-                    variant="outline"
-                    className="!text-[#E02200] font-bold w-full"
-                    onClick={() => {
-                      setSelectedAction("Temporary Suspend");
-                      setShowConfirm(true);
-                    }}
-                  >
-                    Temporary Suspend
-                  </Button>
+                      <Button
+                        variant="outline"
+                        className="!text-[#E02200] font-bold w-full"
+                        onClick={() => {
+                          setSelectedAction("Temporary Suspend");
+                          setShowConfirm(true);
+                        }}
+                      >
+                        Temporary Suspend
+                      </Button>
 
-                  <Button
-                    variant="outline"
-                    className="!text-[#E02200] font-bold w-full"
-                    onClick={() => {
-                      setSelectedAction("Permanent Ban");
-                      setShowConfirm(true);
-                    }}
-                  >
-                    Permanent Ban
-                  </Button>
+                      <Button
+                        variant="outline"
+                        className="!text-[#E02200] font-bold w-full"
+                        onClick={() => {
+                          setSelectedAction("Permanent Ban");
+                          setShowConfirm(true);
+                        }}
+                      >
+                        Permanent Ban
+                      </Button>
+                    </>
+                  ) : reportDetails?.actions?.some(
+                      (action: any) => action.type === "TEMPORARY_SUSPENSION"
+                    ) ? (
+                    // TEMPORARY SUSPENSION ACTIVE
+                    <Button
+                      variant="outline"
+                      className="!text-[#ffff] font-bold w-full"
+                      onClick={() => {
+                        setSelectedAction("Remove Suspend");
+                        setShowConfirm(true);
+                      }}
+                    >
+                      Remove Suspend
+                    </Button>
+                  ) : reportDetails?.actions?.some(
+                      (action: any) => action.type === "PERMANENT_BAN"
+                    ) ? (
+                    // PERMANENT BAN ACTIVE
+                    <Button
+                      variant="outline"
+                      className="!text-[#ffff] font-bold w-full"
+                      onClick={() => {
+                        setSelectedAction("Reinstate User");
+                        setShowConfirm(true);
+                      }}
+                    >
+                      Reinstate User
+                    </Button>
+                  ) : (
+                    // OTHERWISE SHOW ALL ACTION BUTTONS
+                    <>
+                      <Button
+                        variant="outline"
+                        className="!text-[#00E04B] font-bold w-full"
+                        onClick={() => {
+                          setSelectedAction("Mark as Safe");
+                          setShowConfirm(true);
+                        }}
+                      >
+                        Mark as Safe
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        className="!text-[#E08A00] font-bold w-full"
+                        onClick={() => {
+                          setSelectedAction("Issue Warning");
+                          setShowConfirm(true);
+                        }}
+                      >
+                        Issue Warning
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        className="!text-[#E02200] font-bold w-full"
+                        onClick={() => {
+                          setSelectedAction("Temporary Suspend");
+                          setShowConfirm(true);
+                        }}
+                      >
+                        Temporary Suspend
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        className="!text-[#E02200] font-bold w-full"
+                        onClick={() => {
+                          setSelectedAction("Permanent Ban");
+                          setShowConfirm(true);
+                        }}
+                      >
+                        Permanent Ban
+                      </Button>
+                    </>
+                  )}
                 </>
               ) : (
-                // 👉 Confirmation Box (replaces buttons)
+                // Confirmation Box
                 <div className="text-white bg-[#292928] py-3 rounded-xl">
                   <div className="space-y-2 text-center">
                     <h1 className="text-xl">{selectedAction}</h1>
@@ -1216,13 +1339,7 @@ export default function UserSidebar() {
                   <div className="bg-[#131312] w-52 mt-2 m-auto rounded-xl">
                     <Button
                       variant="outline"
-                      className={`font-bold w-full ${
-                        selectedAction === "Mark as Safe"
-                          ? "!text-[#00E04B]"
-                          : selectedAction === "Issue Warning"
-                          ? "!text-[#E08A00]"
-                          : "!text-[#E02200]"
-                      }`}
+                      className="font-bold w-full"
                       disabled={isLoading}
                       onClick={() =>
                         handleAction(selectedAction, reportDetails)
@@ -1245,6 +1362,7 @@ export default function UserSidebar() {
           </div>
         </div>
       )}
+
       {pathName === "/admin/subscriptions" && (
         <div className="flex justify-end">
           <div className="h-screen bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg flex flex-col">
