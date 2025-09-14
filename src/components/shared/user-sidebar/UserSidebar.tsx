@@ -50,7 +50,6 @@ import {
   useDeletePlanMutation,
   useEditPlanMutation,
 } from "@/redux/features/userManagement/subscriptionPlansapi";
-import { useCreateCommentMutation } from "@/redux/features/userManagement/userManagementApi";
 
 export default function UserSidebar() {
   const [activeSidebar, setActiveSidebar] = useState<
@@ -755,7 +754,6 @@ export default function UserSidebar() {
           planName,
           description,
           price: convertPrice,
-          duration: convertedDuration,
         }).unwrap();
 
         console.log(res);
@@ -1882,7 +1880,7 @@ export default function UserSidebar() {
                       />
                     </div>
 
-                    <div>
+                    <div className={`${isEditing ? "hidden" : ""}`}>
                       <label className="text-sm">Duration (days)</label>
                       <input
                         name="billingCycle"

@@ -28,10 +28,10 @@ const subscriptionApi = baseApi.injectEndpoints({
       }),
     }),
     editPlan: builder.mutation({
-      query: ({ params, id }) => ({
+      query: ({ id, ...planData }) => ({
         url: `/payments/plans/${id}`,
         method: "POST",
-        body: params,
+        body: planData,
       }),
     }),
 
