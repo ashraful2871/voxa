@@ -128,6 +128,17 @@ export default function Subscriptions() {
     setPlanId(id);
   };
 
+  // In your Subscriptions component
+  const handleAddNewPlan = () => {
+    localStorage.setItem("newPlan", "add_new_plan");
+    // Dispatch a custom event to notify the sidebar
+    window.dispatchEvent(
+      new CustomEvent("newPlanUpdated", {
+        detail: { action: "add_new_plan" },
+      })
+    );
+  };
+
   if (isLoading) {
     return <PageLoading></PageLoading>;
   }
@@ -157,7 +168,10 @@ export default function Subscriptions() {
             </>
           ))}
 
-          <div className="col-span-3 py-5 px-5 border border-secondary rounded-lg bg-foreground flex flex-col items-center justify-center gap-2">
+          <div
+            onClick={() => handleAddNewPlan("add_new_plan")}
+            className="col-span-3 py-5 px-5 border border-secondary rounded-lg bg-foreground flex flex-col items-center justify-center gap-2 cursor-pointer"
+          >
             <FiPlus className="text-warning text-2xl" />
             <p className="font-bold text-white">Add New Plan</p>
           </div>

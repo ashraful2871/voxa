@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import user from "@/assets/dashboard/user.png";
 import {
   IoBagOutline,
@@ -45,12 +45,16 @@ import { useProcessReportMutation } from "@/redux/features/userManagement/report
 import { format } from "date-fns";
 import { useApprovedVerificationMutation } from "@/redux/features/userManagement/verification-details";
 import { getPlanDetailsData } from "@/utils/receivedPlanDetails";
-import { useDeletePlanMutation } from "@/redux/features/userManagement/subscriptionPlansapi";
+import {
+  useCreatePlanMutation,
+  useDeletePlanMutation,
+} from "@/redux/features/userManagement/subscriptionPlansapi";
+import { useCreateCommentMutation } from "@/redux/features/userManagement/userManagementApi";
 
 export default function UserSidebar() {
-  const [activeSidebar, setActiveSidebar] = useState<"plan" | "user" | null>(
-    "plan"
-  );
+  const [activeSidebar, setActiveSidebar] = useState<
+    "plan" | "user" | "add_plan" | null
+  >("plan");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [userData, setUserData] = useState<any>(getUserData());
@@ -58,9 +62,12 @@ export default function UserSidebar() {
   const [moderationDetails, setModerationDetails] = useState<any>(
     getModerationData()
   );
+  const [newPlan, setNewPlan] = useState<string | null>(null);
   const [verificationDetails, setVerificationDetails] = useState<any>(
     getVerificationData()
   );
+  const [createPlan, { isLoading: CreatePlanLoading }] =
+    useCreatePlanMutation();
   const [planDetails, setPlanDetails] = useState<any>(getPlanDetailsData());
   const [makeSafe, { isLoading }] = useMakeSafeMutation();
   const [issueWarning] = useIssuesWarningMutation();
@@ -537,7 +544,7 @@ export default function UserSidebar() {
     const verificationData = {
       verificationId: id,
       // type: "income",
-      type: type?.toLocaleLowerCase(),
+      type: type,
 
       status: "VERIFIED",
     };
@@ -569,7 +576,7 @@ export default function UserSidebar() {
 
       // type: "income",
       // type: "identity",
-      type: type?.toLocaleLowerCase(),
+      type: type,
 
       status: "REJECTED",
       rejectionReason: rejectReason,
@@ -644,6 +651,50 @@ export default function UserSidebar() {
     }
   }, [subscriptionDetails]);
 
+  // Add this useEffect to listen for newPlan changes
+  useEffect(() => {
+    const storedNewPlan = localStorage.getItem("newPlan");
+    if (storedNewPlan === "add_new_plan") {
+      setNewPlan(storedNewPlan);
+      setActiveSidebar("add_plan");
+    }
+  }, []);
+  // Add this useEffect to listen for newPlan changes
+  useEffect(() => {
+    const handleNewPlanUpdate = (event: CustomEvent) => {
+      if (event.detail.action === "add_new_plan") {
+        setNewPlan("add_new_plan");
+        setActiveSidebar("add_plan");
+      }
+    };
+
+    // Add event listener for the custom event
+    window.addEventListener(
+      "newPlanUpdated",
+      handleNewPlanUpdate as EventListener
+    );
+
+    // Also check localStorage on initial load
+    const storedNewPlan = localStorage.getItem("newPlan");
+    if (storedNewPlan === "add_new_plan") {
+      setNewPlan(storedNewPlan);
+      setActiveSidebar("add_plan");
+    }
+
+    return () => {
+      window.removeEventListener(
+        "newPlanUpdated",
+        handleNewPlanUpdate as EventListener
+      );
+    };
+  }, []);
+
+  const handleCloseAddPlan = () => {
+    setActiveSidebar("plan");
+    setNewPlan(null);
+    localStorage.removeItem("newPlan");
+  };
+
   const handleDeletePlan = async () => {
     const planId = localStorage.getItem("planId");
     console.log(planId);
@@ -664,6 +715,53 @@ export default function UserSidebar() {
       setShowConfirm(false);
     }
   };
+  const formRef = useRef<HTMLFormElement>(null);
+  // add plan
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault(); // Prevent default form submission
+
+    // Get form data using FormData API
+    const formData = new FormData(event.currentTarget);
+
+    // Extract values from form data
+    const planName = formData.get("planName") as string;
+    const price = formData.get("price") as string;
+    const duration = formData.get("billingCycle") as string;
+    const description = formData.get("features") as string;
+    const convertPrice = Number(price);
+    const convertedDuration = Number(duration);
+    // Log or use the values
+    // console.log("Plan Name:", planName);
+    // console.log("Price:", price);
+    // console.log("Billing Cycle:", duration);
+    // console.log("Features:", description);
+
+    const newPlanData = {
+      planName,
+      description,
+      price: convertPrice,
+      duration: convertedDuration,
+    };
+    console.log(newPlanData);
+    try {
+      const res = await createPlan(newPlanData).unwrap();
+      console.log(res);
+      if (res.success) {
+        toast.success("plan created successfully");
+        if (formRef.current) {
+          formRef.current.reset();
+        }
+      }
+    } catch (error) {
+      toast.error("failed to create plan");
+      console.log(error);
+    }
+    // Here you would typically make an API call
+    // Example: createPlan({ planName, price: parseFloat(price), billingCycle, features });
+
+    // Reset form after submission if desired
+  };
+
   return (
     <>
       {pathName === "/admin/user-management" && (
@@ -1696,6 +1794,86 @@ export default function UserSidebar() {
 
       {pathName === "/admin/subscriptions" && (
         <>
+          {activeSidebar === "add_plan" && newPlan === "add_new_plan" && (
+            <div className="flex justify-end">
+              <div className="h-screen bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg flex flex-col">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-bold text-white">Add New Plan</h2>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCloseAddPlan}
+                    className="text-xs h-8 text-white"
+                  >
+                    Close
+                  </Button>
+                </div>
+
+                {/* Add your form for creating a new plan here */}
+                <form
+                  ref={formRef}
+                  onSubmit={handleSubmit}
+                  className="space-y-4 text-white"
+                >
+                  <div>
+                    <label className="text-sm">Plan Name</label>
+                    <input
+                      name="planName"
+                      type="text"
+                      className="w-full bg-muted border border-secondary rounded p-2 text-sm"
+                      placeholder="Enter plan name"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm">Price ($)</label>
+                    <input
+                      name="price"
+                      type="number"
+                      className="w-full bg-muted border border-secondary rounded p-2 text-sm"
+                      placeholder="Enter price"
+                      min="0"
+                      step="0.01"
+                      required
+                    />
+                  </div>
+
+                  {/* */}
+                  <div>
+                    <label className="text-sm">Duration</label>
+                    <input
+                      name="billingCycle"
+                      type="number"
+                      className="w-full bg-muted border border-secondary rounded p-2 text-sm"
+                      placeholder="Enter price"
+                      min="0"
+                      step="0.01"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm">Description</label>
+                    <textarea
+                      name="features"
+                      className="w-full bg-muted border border-secondary rounded p-2 text-sm"
+                      placeholder="Enter plan features"
+                      rows={3}
+                      required
+                    />
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full bg-primary hover:bg-primary/90"
+                  >
+                    Create Plan
+                  </Button>
+                </form>
+              </div>
+            </div>
+          )}
           {/* Plan Sidebar */}
           {activeSidebar === "plan" &&
             planDetails?.message ===
