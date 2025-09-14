@@ -48,6 +48,7 @@ import { getPlanDetailsData } from "@/utils/receivedPlanDetails";
 import {
   useCreatePlanMutation,
   useDeletePlanMutation,
+  useEditPlanMutation,
 } from "@/redux/features/userManagement/subscriptionPlansapi";
 import { useCreateCommentMutation } from "@/redux/features/userManagement/userManagementApi";
 
@@ -62,6 +63,7 @@ export default function UserSidebar() {
   const [moderationDetails, setModerationDetails] = useState<any>(
     getModerationData()
   );
+  const [isEditing, setIsEditing] = useState(false);
   const [newPlan, setNewPlan] = useState<string | null>(null);
   const [verificationDetails, setVerificationDetails] = useState<any>(
     getVerificationData()
@@ -81,6 +83,7 @@ export default function UserSidebar() {
   );
 
   const [deletePlan] = useDeletePlanMutation();
+  const [editPlan] = useEditPlanMutation();
   const [verification] = useApprovedVerificationMutation();
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedAction, setSelectedAction] = useState<null | string>(null);
@@ -689,12 +692,13 @@ export default function UserSidebar() {
     };
   }, []);
 
+  // Update your handleCloseAddPlan function
   const handleCloseAddPlan = () => {
     setActiveSidebar("plan");
     setNewPlan(null);
+    setIsEditing(false);
     localStorage.removeItem("newPlan");
   };
-
   const handleDeletePlan = async () => {
     const planId = localStorage.getItem("planId");
     console.log(planId);
@@ -730,36 +734,67 @@ export default function UserSidebar() {
     const description = formData.get("features") as string;
     const convertPrice = Number(price);
     const convertedDuration = Number(duration);
-    // Log or use the values
-    // console.log("Plan Name:", planName);
-    // console.log("Price:", price);
-    // console.log("Billing Cycle:", duration);
-    // console.log("Features:", description);
 
-    const newPlanData = {
+    const planData = {
       planName,
       description,
       price: convertPrice,
       duration: convertedDuration,
     };
-    console.log(newPlanData);
-    try {
-      const res = await createPlan(newPlanData).unwrap();
-      console.log(res);
-      if (res.success) {
-        toast.success("plan created successfully");
-        if (formRef.current) {
-          formRef.current.reset();
-        }
-      }
-    } catch (error) {
-      toast.error("failed to create plan");
-      console.log(error);
-    }
-    // Here you would typically make an API call
-    // Example: createPlan({ planName, price: parseFloat(price), billingCycle, features });
 
-    // Reset form after submission if desired
+    if (isEditing) {
+      // Handle edit - just console log for now
+
+      console.log("Plan ID would be"); // You'll need to set this when editing
+      const planId = localStorage.getItem("planId");
+      console.log(planId);
+      try {
+        // Send the data as a single object (not nested under params)
+        const res = await editPlan({
+          id: planId,
+          planName,
+          description,
+          price: convertPrice,
+          duration: convertedDuration,
+        }).unwrap();
+
+        console.log(res);
+
+        if (res.success) {
+          toast.success("Plan updated successfully");
+          if (formRef.current) {
+            formRef.current.reset();
+          }
+          setIsEditing(false);
+          setActiveSidebar("plan");
+        }
+      } catch (error) {
+        toast.error("Failed to update plan");
+        console.log(error);
+      }
+    } else {
+      // Handle create new plan
+      console.log("Creating new plan:", planData);
+      try {
+        const res = await createPlan(planData).unwrap();
+        console.log(res);
+        if (res.success) {
+          toast.success("Plan created successfully");
+          if (formRef.current) {
+            formRef.current.reset();
+          }
+        }
+      } catch (error) {
+        toast.error("Failed to create plan");
+        console.log(error);
+      }
+    }
+  };
+
+  // Add this function to handle edit button click
+  const handleEditPlan = () => {
+    setIsEditing(true);
+    setActiveSidebar("add_plan");
   };
 
   return (
@@ -1794,103 +1829,110 @@ export default function UserSidebar() {
 
       {pathName === "/admin/subscriptions" && (
         <>
-          {activeSidebar === "add_plan" && newPlan === "add_new_plan" && (
-            <div className="flex justify-end">
-              <div className="h-screen bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg flex flex-col">
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    <Image
-                      src={"https://i.ibb.co.com/Lz07gzyq/Group-11.png"}
-                      alt="Profile"
-                      height={80}
-                      width={80}
-                      className="rounded-full"
-                    />
-                    <h2 className="text-lg font-bold text-white mt-2 mb-2">
-                      Add New Plan
-                    </h2>
-                    <p className="text-white text-xs">
-                      Define the details of this new plan. This will appear as
-                      an upgrade option for users once saved.
-                    </p>
+          {activeSidebar === "add_plan" &&
+            (newPlan === "add_new_plan" || isEditing) && (
+              <div className="flex justify-end">
+                <div className="h-screen bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg flex flex-col">
+                  <div className="flex justify-between items-center mb-4">
+                    <div>
+                      <Image
+                        src={"https://i.ibb.co.com/Lz07gzyq/Group-11.png"}
+                        alt="Profile"
+                        height={80}
+                        width={80}
+                        className="rounded-full"
+                      />
+                      <h2 className="text-lg font-bold text-white mt-2 mb-2">
+                        {isEditing ? "Edit Plan" : "Add New Plan"}
+                      </h2>
+                      <p className="text-white text-xs">
+                        {isEditing
+                          ? "Update the details of this plan."
+                          : "Define the details of this new plan. This will appear as an upgrade option for users once saved."}
+                      </p>
+                    </div>
                   </div>
+
+                  <form
+                    ref={formRef}
+                    onSubmit={handleSubmit}
+                    className="space-y-4 text-white"
+                  >
+                    <div>
+                      <label className="text-sm">Plan Name</label>
+                      <input
+                        name="planName"
+                        type="text"
+                        className="w-full bg-muted border border-secondary rounded p-2 text-sm"
+                        placeholder="Enter plan name"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm">Price ($)</label>
+                      <input
+                        name="price"
+                        type="number"
+                        className="w-full bg-muted border border-secondary rounded p-2 text-sm"
+                        placeholder="Enter price"
+                        min="0"
+                        step="0.01"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm">Duration (days)</label>
+                      <input
+                        name="billingCycle"
+                        type="number"
+                        className="w-full bg-muted border border-secondary rounded p-2 text-sm"
+                        placeholder="Enter duration in days"
+                        min="1"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm">Description</label>
+                      <textarea
+                        name="features"
+                        className="w-full bg-muted border border-secondary rounded p-2 text-sm"
+                        placeholder="Enter plan description"
+                        rows={3}
+                        required
+                      />
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button
+                        type="submit"
+                        variant={"outline"}
+                        className="mt-auto !text-[#ffff] font-bold flex-1 bg-[#000000]"
+                        disabled={CreatePlanLoading}
+                      >
+                        {CreatePlanLoading
+                          ? isEditing
+                            ? "Saving..."
+                            : "Creating..."
+                          : isEditing
+                          ? "Save Changes"
+                          : "Create Plan"}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        type="button"
+                        onClick={handleCloseAddPlan}
+                        className="!text-[#ffff] font-bold flex-1"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </form>
                 </div>
-
-                {/* Add your form for creating a new plan here */}
-                <form
-                  ref={formRef}
-                  onSubmit={handleSubmit}
-                  className="space-y-4 text-white"
-                >
-                  <div>
-                    <label className="text-sm">Plan Name</label>
-                    <input
-                      name="planName"
-                      type="text"
-                      className="w-full bg-muted border border-secondary rounded p-2 text-sm"
-                      placeholder="Enter plan name"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm">Price ($)</label>
-                    <input
-                      name="price"
-                      type="number"
-                      className="w-full bg-muted border border-secondary rounded p-2 text-sm"
-                      placeholder="Enter price"
-                      min="0"
-                      step="0.01"
-                      required
-                    />
-                  </div>
-
-                  {/* */}
-                  <div>
-                    <label className="text-sm">Duration</label>
-                    <input
-                      name="billingCycle"
-                      type="number"
-                      className="w-full bg-muted border border-secondary rounded p-2 text-sm"
-                      placeholder="Enter price"
-                      min="0"
-                      step="0.01"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm">Description</label>
-                    <textarea
-                      name="features"
-                      className="w-full bg-muted border border-secondary rounded p-2 text-sm"
-                      placeholder="Enter plan features"
-                      rows={3}
-                      required
-                    />
-                  </div>
-
-                  <Button
-                    type="submit"
-                    variant={"outline"}
-                    className="mt-auto !text-[#ffff] font-bold w-full bg-[#000000]"
-                  >
-                    Create Plan
-                  </Button>
-                  <Button
-                    variant="outline"
-                    type="button"
-                    size="sm"
-                    onClick={handleCloseAddPlan}
-                    className="!text-[#ffff] font-bold w-full"
-                  >
-                    Close
-                  </Button>
-                </form>
               </div>
-            </div>
-          )}
+            )}
           {/* Plan Sidebar */}
           {activeSidebar === "plan" &&
             planDetails?.message ===
@@ -1944,6 +1986,7 @@ export default function UserSidebar() {
                         <Button
                           variant={"outline"}
                           className="!text-[#ffff] font-bold w-48"
+                          onClick={handleEditPlan}
                         >
                           Edit Plan
                         </Button>

@@ -27,6 +27,13 @@ const subscriptionApi = baseApi.injectEndpoints({
         body: params,
       }),
     }),
+    editPlan: builder.mutation({
+      query: ({ params, id }) => ({
+        url: `/payments/plans/${id}`,
+        method: "POST",
+        body: params,
+      }),
+    }),
 
     processReport: builder.mutation({
       query: (params) => ({
@@ -44,4 +51,5 @@ export const {
   useSubscriptionPlanDetailsQuery,
   useDeletePlanMutation,
   useCreatePlanMutation,
+  useEditPlanMutation,
 } = subscriptionApi;
