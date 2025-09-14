@@ -85,7 +85,8 @@ export default function Subscriptions() {
   const users =
     data?.data?.users.map((user: any) => ({
       id: user.id,
-      name: user.name || user.email,
+      name: user.name,
+      email: user.email,
       plan: user.subscriptionUser?.subscriptionPlanType || "---",
       status: user.subscriptionUser?.subscriptionStatus
         ? user.subscriptionUser.subscriptionStatus === "active"
@@ -138,7 +139,7 @@ export default function Subscriptions() {
       })
     );
   };
-
+  console.log(paginatedUsers);
   if (isLoading) {
     return <PageLoading></PageLoading>;
   }
@@ -276,7 +277,7 @@ export default function Subscriptions() {
                       className="border-border hover:bg-muted/50 cursor-pointer"
                     >
                       <TableCell className="text-white text-sm font-bold">
-                        {user.name}
+                        {user.name || "N/A"}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {user.plan}

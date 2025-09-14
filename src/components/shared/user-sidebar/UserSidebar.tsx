@@ -46,6 +46,7 @@ import { format } from "date-fns";
 import { useApprovedVerificationMutation } from "@/redux/features/userManagement/verification-details";
 import { getPlanDetailsData } from "@/utils/receivedPlanDetails";
 import {
+  useCancelSubscriptionMutation,
   useCreatePlanMutation,
   useDeletePlanMutation,
   useEditPlanMutation,
@@ -80,6 +81,8 @@ export default function UserSidebar() {
   const [subscriptionDetails, setSubscriptionDetails] = useState<any>(
     getReportData()
   );
+
+  const [cancelSubscription] = useCancelSubscriptionMutation();
 
   const [deletePlan] = useDeletePlanMutation();
   const [editPlan] = useEditPlanMutation();
@@ -795,6 +798,25 @@ export default function UserSidebar() {
     setActiveSidebar("add_plan");
   };
 
+  const handleCancelSubscription = async (info: any) => {
+    console.log(info?.data?.email);
+    const cancelInfo = {
+      email: info?.data?.email,
+    };
+
+    try {
+      const res = await cancelSubscription(cancelInfo);
+      if (res?.data?.success) {
+        toast.success("User's subscription cancelled successfully");
+      }
+      if (res?.error) {
+        toast.error("No active subscription found for this user");
+      }
+    } catch (error) {
+      toast.error("subscription cancelled failed");
+      console.log(error);
+    }
+  };
   return (
     <>
       {pathName === "/admin/user-management" && (
@@ -2190,13 +2212,16 @@ export default function UserSidebar() {
 
                   {/* Buttons at bottom */}
                   <div className="space-y-2 mt-2">
-                    <Button
+                    {/* <Button
                       variant={"outline"}
                       className="!text-[#00E04B] font-bold w-full"
                     >
                       View Payment History
-                    </Button>
+                    </Button> */}
                     <Button
+                      onClick={() =>
+                        handleCancelSubscription(subscriptionDetails)
+                      }
                       variant={"outline"}
                       className="!text-[#E02200] font-bold w-full"
                     >
