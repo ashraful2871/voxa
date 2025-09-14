@@ -1798,15 +1798,22 @@ export default function UserSidebar() {
             <div className="flex justify-end">
               <div className="h-screen bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg flex flex-col">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-lg font-bold text-white">Add New Plan</h2>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleCloseAddPlan}
-                    className="text-xs h-8 text-white"
-                  >
-                    Close
-                  </Button>
+                  <div>
+                    <Image
+                      src={"https://i.ibb.co.com/Lz07gzyq/Group-11.png"}
+                      alt="Profile"
+                      height={80}
+                      width={80}
+                      className="rounded-full"
+                    />
+                    <h2 className="text-lg font-bold text-white mt-2 mb-2">
+                      Add New Plan
+                    </h2>
+                    <p className="text-white text-xs">
+                      Define the details of this new plan. This will appear as
+                      an upgrade option for users once saved.
+                    </p>
+                  </div>
                 </div>
 
                 {/* Add your form for creating a new plan here */}
@@ -1866,9 +1873,19 @@ export default function UserSidebar() {
 
                   <Button
                     type="submit"
-                    className="w-full bg-primary hover:bg-primary/90"
+                    variant={"outline"}
+                    className="mt-auto !text-[#ffff] font-bold w-full bg-[#000000]"
                   >
                     Create Plan
+                  </Button>
+                  <Button
+                    variant="outline"
+                    type="button"
+                    size="sm"
+                    onClick={handleCloseAddPlan}
+                    className="!text-[#ffff] font-bold w-full"
+                  >
+                    Close
                   </Button>
                 </form>
               </div>
