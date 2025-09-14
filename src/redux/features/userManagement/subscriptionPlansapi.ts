@@ -41,11 +41,19 @@ const subscriptionApi = baseApi.injectEndpoints({
         body: params,
       }),
     }),
+    // In your subscriptionApi
+    paymentHistory: builder.query({
+      query: (params) => ({
+        url: `/payments/user/payments`,
+        method: "GET", // Keep it as GET
+        body: params, // But include the body
+      }),
+    }),
 
     processReport: builder.mutation({
       query: (params) => ({
         url: `/admin/process-report`,
-        method: "POST",
+        method: "GET",
         body: params,
       }),
     }),
@@ -60,4 +68,5 @@ export const {
   useCreatePlanMutation,
   useEditPlanMutation,
   useCancelSubscriptionMutation,
+  usePaymentHistoryQuery,
 } = subscriptionApi;

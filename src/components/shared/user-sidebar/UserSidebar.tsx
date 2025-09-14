@@ -50,12 +50,16 @@ import {
   useCreatePlanMutation,
   useDeletePlanMutation,
   useEditPlanMutation,
+  usePaymentHistoryQuery,
 } from "@/redux/features/userManagement/subscriptionPlansapi";
 
 export default function UserSidebar() {
   const [activeSidebar, setActiveSidebar] = useState<
     "plan" | "user" | "add_plan" | null
-  >("plan");
+  >("user");
+  const [email, setEmail] = useState<string | null>(null);
+  // Add this state at the top of your component
+  const [showPaymentHistory, setShowPaymentHistory] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [userData, setUserData] = useState<any>(getUserData());
@@ -83,7 +87,8 @@ export default function UserSidebar() {
   );
 
   const [cancelSubscription] = useCancelSubscriptionMutation();
-
+  // const { data: paymentHistory } = usePaymentHistoryQuery({ email: email });
+  // console.log(paymentHistory);
   const [deletePlan] = useDeletePlanMutation();
   const [editPlan] = useEditPlanMutation();
   const [verification] = useApprovedVerificationMutation();
@@ -94,7 +99,7 @@ export default function UserSidebar() {
   console.log(pathName);
 
   console.log(planDetails);
-  console.log(subscriptionDetails);
+  // console.log(subscriptionDetails);
 
   useEffect(() => {
     const handleUserUpdate = () => {
@@ -816,6 +821,17 @@ export default function UserSidebar() {
       toast.error("subscription cancelled failed");
       console.log(error);
     }
+  };
+
+  const handlePaymentHistory = async (info: any) => {
+    console.log(info?.data?.email);
+    setShowPaymentHistory(!showPaymentHistory); // Toggle visibility
+  };
+
+  // Add this function to close the payment history
+  const handleClosePaymentHistory = () => {
+    setShowPaymentHistory(false);
+    setEmail("");
   };
   return (
     <>
@@ -1974,7 +1990,7 @@ export default function UserSidebar() {
 
                   {/* Plan Title & Price */}
                   <h2 className="text-lg font-bold text-white">
-                    Monthly - $9.99
+                    Monthly -$ {planDetails?.data?.plan?.amount}
                   </h2>
                   <p className="text-sm text-gray-300 mb-3">
                     Bill After 30 days
@@ -1987,15 +2003,24 @@ export default function UserSidebar() {
                   <div className="space-y-2 text-sm text-white">
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="text-green-400 w-4 h-4" />
-                      <span>Active Subscriptions: 1,382</span>
+                      <span>
+                        Active Subscriptions: ${" "}
+                        {planDetails?.data?.metrics?.activeSubscriptions}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="text-green-400 w-4 h-4" />
-                      <span>Monthly Revenue: $3,284</span>
+                      <span>
+                        Monthly Revenue: ${" "}
+                        {planDetails?.data?.metrics?.monthlyRevenue}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="text-green-400 w-4 h-4" />
-                      <span>Failed Renewals: 12</span>
+                      <span>
+                        Failed Renewals:{" "}
+                        {planDetails?.data?.metrics?.failedRenewals}
+                      </span>
                     </div>
                   </div>
 
@@ -2208,16 +2233,31 @@ export default function UserSidebar() {
                           : "N/A"}
                       </p>
                     </div>
+                    {/*Payment history*/}
+                    {showPaymentHistory && (
+                      <div className="flex flex-col gap-2 ml-5 mt-4">
+                        <h1 className="text-base text-white">
+                          Payment History
+                        </h1>
+                        <p>Jun 15 – $9.99</p>
+                        <p>Feb 15 – $9.99</p>
+                        <p>Jun 15 – $9.99</p>
+                        <p>March 15 – Upcoming</p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Buttons at bottom */}
                   <div className="space-y-2 mt-2">
-                    {/* <Button
+                    <Button
+                      onClick={() => handlePaymentHistory(subscriptionDetails)}
                       variant={"outline"}
-                      className="!text-[#00E04B] font-bold w-full"
+                      className="!text-[#ffff] font-bold w-full"
                     >
-                      View Payment History
-                    </Button> */}
+                      {showPaymentHistory
+                        ? "Hide Payment History"
+                        : "View Payment History"}
+                    </Button>
                     <Button
                       onClick={() =>
                         handleCancelSubscription(subscriptionDetails)
