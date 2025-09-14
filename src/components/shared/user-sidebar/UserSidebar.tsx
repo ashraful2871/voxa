@@ -40,12 +40,19 @@ import {
 } from "@/redux/features/userManagement/voiceModerationQueue";
 import { toast } from "sonner";
 import Link from "next/link";
-import { User } from "lucide-react";
+import { CheckCircle2, User } from "lucide-react";
 import { useProcessReportMutation } from "@/redux/features/userManagement/reportsDetailsApi";
 import { format } from "date-fns";
 import { useApprovedVerificationMutation } from "@/redux/features/userManagement/verification-details";
+import { getPlanDetailsData } from "@/utils/receivedPlanDetails";
+import { useDeletePlanMutation } from "@/redux/features/userManagement/subscriptionPlansapi";
 
 export default function UserSidebar() {
+  const [activeSidebar, setActiveSidebar] = useState<"plan" | "user" | null>(
+    "plan"
+  );
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [userData, setUserData] = useState<any>(getUserData());
   const [rejectReason, setRejectReason] = useState<string | undefined>();
   const [moderationDetails, setModerationDetails] = useState<any>(
@@ -54,6 +61,7 @@ export default function UserSidebar() {
   const [verificationDetails, setVerificationDetails] = useState<any>(
     getVerificationData()
   );
+  const [planDetails, setPlanDetails] = useState<any>(getPlanDetailsData());
   const [makeSafe, { isLoading }] = useMakeSafeMutation();
   const [issueWarning] = useIssuesWarningMutation();
   const [processReport] = useProcessReportMutation();
@@ -64,6 +72,8 @@ export default function UserSidebar() {
   const [subscriptionDetails, setSubscriptionDetails] = useState<any>(
     getReportData()
   );
+
+  const [deletePlan] = useDeletePlanMutation();
   const [verification] = useApprovedVerificationMutation();
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedAction, setSelectedAction] = useState<null | string>(null);
@@ -71,7 +81,8 @@ export default function UserSidebar() {
   const pathName = usePathname();
   console.log(pathName);
 
-  console.log(verificationDetails);
+  console.log(planDetails);
+  console.log(subscriptionDetails);
 
   useEffect(() => {
     const handleUserUpdate = () => {
@@ -151,6 +162,20 @@ export default function UserSidebar() {
         "subscriptionDataUpdated",
         handleSubscriptionUpdate
       );
+    };
+  }, []);
+
+  // plan details
+  useEffect(() => {
+    const handlePlanUpdate = () => {
+      setPlanDetails(getPlanDetailsData());
+    };
+
+    // Listen to the correct event name
+    window.addEventListener("planDetailsDataUpdated", handlePlanUpdate);
+
+    return () => {
+      window.removeEventListener("planDetailsDataUpdated", handlePlanUpdate);
     };
   }, []);
 
@@ -585,6 +610,58 @@ export default function UserSidebar() {
       case "Reject Submission":
         handleRejection();
         break;
+    }
+  };
+
+  const handleSubsCriptionDetails = (id: string) => {
+    setSelectedUserId(id);
+    setActiveSidebar("user"); // switch to user sidebar
+  };
+
+  const handlePlanDetails = (id: string) => {
+    setSelectedPlanId(id);
+    setActiveSidebar("plan"); // switch to plan sidebar
+  };
+
+  // Add this useEffect to listen for plan details updates
+  useEffect(() => {
+    // When plan details are loaded, switch to plan sidebar
+    if (
+      planDetails?.message === "Subscription plan details fetched successfully"
+    ) {
+      setActiveSidebar("plan");
+    }
+  }, [planDetails]);
+
+  // Add this useEffect to listen for subscription details updates
+  useEffect(() => {
+    // When subscription details are loaded, switch to user sidebar
+    if (
+      subscriptionDetails?.message ===
+      "Subscription user details retrieved successfully"
+    ) {
+      setActiveSidebar("user");
+    }
+  }, [subscriptionDetails]);
+
+  const handleDeletePlan = async () => {
+    const planId = localStorage.getItem("planId");
+    console.log(planId);
+    try {
+      const res = await deletePlan(planId).unwrap();
+
+      if (res.success) {
+        toast.success("delete successfully");
+        setShowConfirm(false);
+      }
+      if (!res.success) {
+        toast.success("Something went wrong");
+        setShowConfirm(false);
+      }
+      console.log(res);
+    } catch (error) {
+      console.log(error);
+      setShowConfirm(false);
     }
   };
   return (
@@ -1618,149 +1695,282 @@ export default function UserSidebar() {
       )}
 
       {pathName === "/admin/subscriptions" && (
-        <div className="flex justify-end">
-          <div className="h-screen bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg flex flex-col">
-            {/* Profile Image */}
-            <Image
-              src={
-                subscriptionDetails?.image ||
-                "https://i.ibb.co.com/jvvWfZ0w/1000-F-349497933-Ly4im8-BDm-HLa-Lzgy-Kg2f2y-ZOv-Jj-Btlw5.jpg"
-              }
-              alt="User Avatar"
-              height={80}
-              width={80}
-              className="rounded-full object-cover"
-            />
+        <>
+          {/* Plan Sidebar */}
+          {activeSidebar === "plan" &&
+            planDetails?.message ===
+              "Subscription plan details fetched successfully" && (
+              <div className="flex justify-end">
+                <div className="h-screen bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg flex flex-col">
+                  {/* Icon */}
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="flex items-center">
+                      <Image
+                        src={"https://i.ibb.co.com/Lz07gzyq/Group-11.png"}
+                        alt="User Avatar"
+                        height={80}
+                        width={80}
+                        className="rounded-full object-cover mr-3"
+                      />
+                    </div>
+                  </div>
 
-            {/* Name + Icons */}
-            <div className="flex justify-between items-center mt-3">
-              <h2 className="text-xl font-bold text-white">
-                {subscriptionDetails?.name || "Unknown User"}
-              </h2>
-              <div className="flex gap-2">
-                <FaCircleCheck className="text-lg text-green-400" />
-                <IoBagSharp className="text-lg text-white" />
+                  {/* Plan Title & Price */}
+                  <h2 className="text-lg font-bold text-white">
+                    Monthly - $9.99
+                  </h2>
+                  <p className="text-sm text-gray-300 mb-3">
+                    Bill After 30 days
+                  </p>
+
+                  {/* Divider */}
+                  <hr className="border-gray-600 my-2" />
+
+                  {/* Stats */}
+                  <div className="space-y-2 text-sm text-white">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="text-green-400 w-4 h-4" />
+                      <span>Active Subscriptions: 1,382</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="text-green-400 w-4 h-4" />
+                      <span>Monthly Revenue: $3,284</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="text-green-400 w-4 h-4" />
+                      <span>Failed Renewals: 12</span>
+                    </div>
+                  </div>
+
+                  {/* Buttons at bottom */}
+                  <div className="mt-auto ml-6 space-y-2 pt-4">
+                    {!showConfirm ? (
+                      <>
+                        <Button
+                          variant={"outline"}
+                          className="!text-[#ffff] font-bold w-48"
+                        >
+                          Edit Plan
+                        </Button>
+                        <Button
+                          variant={"outline"}
+                          className="!text-[#ffff] font-bold w-48"
+                          onClick={() => setShowConfirm(true)}
+                        >
+                          Delete Plan
+                        </Button>
+                      </>
+                    ) : (
+                      // Confirmation Box
+                      <div className="text-white bg-[#292928] py-3 rounded-xl">
+                        <div className="space-y-2 text-center">
+                          <h1 className="text-xl">Delete Plan</h1>
+                          <p className="text-xs">
+                            You are about to delete this plan. This action
+                            cannot be undone.
+                          </p>
+                        </div>
+
+                        <div className="bg-[#131312] w-52 mt-2 m-auto rounded-xl">
+                          <Button
+                            variant="outline"
+                            className="font-bold w-full"
+                            disabled={isLoading}
+                            onClick={handleDeletePlan}
+                          >
+                            {isLoading ? "Deleting..." : "Confirm Delete"}
+                          </Button>
+                        </div>
+
+                        <Button
+                          variant="outline"
+                          className="font-bold w-full mt-2"
+                          onClick={() => setShowConfirm(false)}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Plan */}
-            <p className="text-sm font-medium text-warning border-b border-secondary pb-2">
-              {subscriptionDetails?.voxaPlanType?.replace("_", " ")} – End in{" "}
-              {subscriptionDetails?.subscriptionUser?.subscriptionEnd
-                ? new Date(
-                    subscriptionDetails?.subscriptionUser?.subscriptionEnd
-                  ).toLocaleDateString("en-US", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })
-                : "N/A"}
-            </p>
+          {/* User Sidebar */}
+          {activeSidebar === "user" &&
+            subscriptionDetails?.message ===
+              "Subscription user details retrieved successfully" && (
+              <div className="flex justify-end">
+                <div className="h-screen bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg flex flex-col">
+                  {/* Profile Image and header with toggle button */}
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="flex items-center">
+                      <Image
+                        src={
+                          subscriptionDetails?.data?.data?.image ||
+                          "https://i.ibb.co.com/jvvWfZ0w/1000-F-349497933-Ly4im8-BDm-HLa-Lzgy-Kg2f2y-ZOv-Jj-Btlw5.jpg"
+                        }
+                        alt="User Avatar"
+                        height={40}
+                        width={40}
+                        className="rounded-full object-cover mr-3"
+                      />
+                      <h2 className="text-lg font-bold text-white">
+                        User Details
+                      </h2>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setActiveSidebar("plan")}
+                      className="text-xs h-8"
+                    >
+                      View Plan
+                    </Button>
+                  </div>
 
-            {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto pt-2 pb-3 border-secondary text-secondary space-y-3 text-sm">
-              {/* Location */}
-              <div className="flex gap-2 items-center">
-                <MdOutlineLocationOn className="text-lg" />
-                <p>{subscriptionDetails?.location || "Unknown Location"}</p>
+                  {/* Name + Icons */}
+                  <div className="flex justify-between items-center mt-1">
+                    <h2 className="text-xl font-bold text-white">
+                      {subscriptionDetails?.data?.name || "Unknown User"}
+                    </h2>
+                    <div className="flex gap-2">
+                      <FaCircleCheck className="text-lg text-green-400" />
+                      <IoBagSharp className="text-lg text-white" />
+                    </div>
+                  </div>
+
+                  {/* Plan */}
+                  <p className="text-sm font-medium text-warning border-b border-secondary pb-2 mt-2">
+                    {subscriptionDetails?.data?.voxaPlanType?.replace("_", " ")}{" "}
+                    – End in{" "}
+                    {subscriptionDetails?.data?.subscriptionUser
+                      ?.subscriptionEnd
+                      ? new Date(
+                          subscriptionDetails?.data?.subscriptionUser?.subscriptionEnd
+                        ).toLocaleDateString("en-US", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })
+                      : "N/A"}
+                  </p>
+
+                  {/* Scrollable Content */}
+                  <div className="flex-1 overflow-y-auto pt-2 pb-3 border-secondary text-secondary space-y-3 text-sm mt-2">
+                    {/* Location */}
+                    <div className="flex gap-2 items-center">
+                      <MdOutlineLocationOn className="text-lg" />
+                      <p>
+                        {subscriptionDetails?.data?.location ||
+                          "Unknown Location"}
+                      </p>
+                    </div>
+
+                    {/* Email */}
+                    <div className="flex gap-2 items-center">
+                      <MdEmail className="text-lg" />
+                      <p>{subscriptionDetails?.data?.email || "N/A"}</p>
+                    </div>
+
+                    {/* Identity Verification */}
+                    <div className="flex gap-2 items-center">
+                      <FaIdCard className="text-lg" />
+                      <p>
+                        Identity Verified:{" "}
+                        {subscriptionDetails?.data?.isIdentityImageVerified
+                          ? "Yes"
+                          : "No"}
+                      </p>
+                    </div>
+
+                    {/* Income Verification */}
+                    <div className="flex gap-2 items-center">
+                      <FaMoneyCheckAlt className="text-lg" />
+                      <p>
+                        Income Verified:{" "}
+                        {subscriptionDetails?.data?.isIncomeImageVerified
+                          ? "Yes"
+                          : "No"}
+                      </p>
+                    </div>
+
+                    {/* Subscription Plan */}
+                    <div className="flex gap-2 items-center">
+                      <IoBagSharp className="text-lg" />
+                      <p>
+                        Subscription Plan:{" "}
+                        {subscriptionDetails?.data?.subscriptionUser
+                          ?.subscriptionPlanType || "N/A"}
+                      </p>
+                    </div>
+
+                    {/* Subscription Status */}
+                    <div className="flex gap-2 items-center">
+                      <MdOutlineVerifiedUser className="text-lg" />
+                      <p>
+                        Subscription Status:{" "}
+                        {subscriptionDetails?.data?.subscriptionUser
+                          ?.subscriptionStatus || "N/A"}
+                      </p>
+                    </div>
+
+                    {/* Subscription Start */}
+                    <div className="flex gap-2 items-center">
+                      <IoCalendarClearOutline className="text-lg" />
+                      <p>
+                        Start Date:{" "}
+                        {subscriptionDetails?.data?.subscriptionUser
+                          ?.subscriptionStart
+                          ? new Date(
+                              subscriptionDetails?.data?.subscriptionUser?.subscriptionStart
+                            ).toLocaleDateString("en-US", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            })
+                          : "N/A"}
+                      </p>
+                    </div>
+
+                    {/* Subscription End */}
+                    <div className="flex gap-2 items-center">
+                      <IoCalendarNumberOutline className="text-lg" />
+                      <p>
+                        End Date:{" "}
+                        {subscriptionDetails?.data?.subscriptionUser
+                          ?.subscriptionEnd
+                          ? new Date(
+                              subscriptionDetails?.data?.subscriptionUser?.subscriptionEnd
+                            ).toLocaleDateString("en-US", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            })
+                          : "N/A"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Buttons at bottom */}
+                  <div className="space-y-2 mt-2">
+                    <Button
+                      variant={"outline"}
+                      className="!text-[#00E04B] font-bold w-full"
+                    >
+                      View Payment History
+                    </Button>
+                    <Button
+                      variant={"outline"}
+                      className="!text-[#E02200] font-bold w-full"
+                    >
+                      Cancel Subscription
+                    </Button>
+                  </div>
+                </div>
               </div>
-
-              {/* Email */}
-              <div className="flex gap-2 items-center">
-                <MdEmail className="text-lg" />
-                <p>{subscriptionDetails?.email || "N/A"}</p>
-              </div>
-
-              {/* Identity Verification */}
-              <div className="flex gap-2 items-center">
-                <FaIdCard className="text-lg" />
-                <p>
-                  Identity Verified:{" "}
-                  {subscriptionDetails?.isIdentityImageVerified ? "Yes" : "No"}
-                </p>
-              </div>
-
-              {/* Income Verification */}
-              <div className="flex gap-2 items-center">
-                <FaMoneyCheckAlt className="text-lg" />
-                <p>
-                  Income Verified:{" "}
-                  {subscriptionDetails?.isIncomeImageVerified ? "Yes" : "No"}
-                </p>
-              </div>
-
-              {/* Subscription Plan */}
-              <div className="flex gap-2 items-center">
-                <IoBagSharp className="text-lg" />
-                <p>
-                  Subscription Plan:{" "}
-                  {subscriptionDetails?.subscriptionUser
-                    ?.subscriptionPlanType || "N/A"}
-                </p>
-              </div>
-
-              {/* Subscription Status */}
-              <div className="flex gap-2 items-center">
-                <MdOutlineVerifiedUser className="text-lg" />
-                <p>
-                  Subscription Status:{" "}
-                  {subscriptionDetails?.subscriptionUser?.subscriptionStatus ||
-                    "N/A"}
-                </p>
-              </div>
-
-              {/* Subscription Start */}
-              <div className="flex gap-2 items-center">
-                <IoCalendarClearOutline className="text-lg" />
-                <p>
-                  Start Date:{" "}
-                  {subscriptionDetails?.subscriptionUser?.subscriptionStart
-                    ? new Date(
-                        subscriptionDetails?.subscriptionUser?.subscriptionStart
-                      ).toLocaleDateString("en-US", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })
-                    : "N/A"}
-                </p>
-              </div>
-
-              {/* Subscription End */}
-              <div className="flex gap-2 items-center">
-                <IoCalendarNumberOutline className="text-lg" />
-                <p>
-                  End Date:{" "}
-                  {subscriptionDetails?.subscriptionUser?.subscriptionEnd
-                    ? new Date(
-                        subscriptionDetails?.subscriptionUser?.subscriptionEnd
-                      ).toLocaleDateString("en-US", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })
-                    : "N/A"}
-                </p>
-              </div>
-            </div>
-
-            {/* Buttons at bottom */}
-            <div className="space-y-2">
-              <Button
-                variant={"outline"}
-                className="!text-[#00E04B] font-bold w-full"
-              >
-                View Payment History
-              </Button>
-              <Button
-                variant={"outline"}
-                className="!text-[#E02200] font-bold w-full"
-              >
-                Cancel Subscription
-              </Button>
-            </div>
-          </div>
-        </div>
+            )}
+        </>
       )}
     </>
   );

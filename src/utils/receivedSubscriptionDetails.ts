@@ -4,13 +4,10 @@ let subsCriptionData: any = null;
 
 export const receivedSubscriptionDetails = (subscription: any) => {
   subsCriptionData = subscription;
-  console.log("User subscription:", subsCriptionData?.data);
+  console.log("User subscription:", subsCriptionData);
 
-  if (subsCriptionData?.data) {
-    localStorage.setItem(
-      "subscriptionData",
-      JSON.stringify(subsCriptionData.data)
-    );
+  if (subsCriptionData) {
+    localStorage.setItem("subscriptionData", JSON.stringify(subsCriptionData));
 
     // Dispatch a custom event to notify components
     window.dispatchEvent(new Event("subscriptionDataUpdated"));

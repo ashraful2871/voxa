@@ -14,6 +14,12 @@ const subscriptionApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+    deletePlan: builder.mutation({
+      query: (id) => ({
+        url: `/payments/plans/${id}`,
+        method: "DELETE",
+      }),
+    }),
     processReport: builder.mutation({
       query: (params) => ({
         url: `/admin/process-report`,
@@ -28,4 +34,5 @@ export const {
   useAllSubscriptionPlansQuery,
   useProcessReportMutation,
   useSubscriptionPlanDetailsQuery,
+  useDeletePlanMutation,
 } = subscriptionApi;

@@ -6,13 +6,12 @@ export const receivedPlanDetails = (subscription: any) => {
   planDetailsData = subscription;
   console.log("User subscription:", planDetailsData?.data);
 
-  if (planDetailsData?.data) {
+  if (planDetailsData) {
     localStorage.setItem(
       "planDetailsData",
-      JSON.stringify(planDetailsData.data)
+      JSON.stringify(planDetailsData) // ✅ only saves .data
     );
 
-    // Dispatch a custom event to notify components
     window.dispatchEvent(new Event("planDetailsDataUpdated"));
   }
 };

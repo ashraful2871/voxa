@@ -37,6 +37,7 @@ import {
   useAllSubscriptionPlansQuery,
   useSubscriptionPlanDetailsQuery,
 } from "@/redux/features/userManagement/subscriptionPlansapi";
+import { receivedPlanDetails } from "@/utils/receivedPlanDetails";
 
 export default function Subscriptions() {
   const [selectId, setSelectId] = useState<string | null>(null);
@@ -62,7 +63,7 @@ export default function Subscriptions() {
 
   useEffect(() => {
     if (planDetails) {
-      receivedSubscriptionDetails(planDetails);
+      receivedPlanDetails(planDetails);
     }
   }, [planDetails]);
 
@@ -121,8 +122,9 @@ export default function Subscriptions() {
     console.log(id);
   };
 
-  const handlePlanDetails = async (id: string) => {
-    console.log(id);
+  const handlePlanDetails = async (id: string, planId: string) => {
+    console.log(planId);
+    localStorage.setItem("planId", planId);
     setPlanId(id);
   };
 
@@ -138,7 +140,12 @@ export default function Subscriptions() {
           {subscriptions?.data.map((subscription: any, idx: number) => (
             <>
               <div
-                onClick={() => handlePlanDetails(subscription?.stripePriceId)}
+                onClick={() =>
+                  handlePlanDetails(
+                    subscription?.stripePriceId,
+                    subscription?.id
+                  )
+                }
                 key={idx}
                 className="col-span-3 border py-5 px-5 border-secondary rounded-lg bg-foreground cursor-pointer"
               >
