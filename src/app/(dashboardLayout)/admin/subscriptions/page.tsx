@@ -169,7 +169,7 @@ export default function Subscriptions() {
           ))}
 
           <div
-            onClick={() => handleAddNewPlan("add_new_plan")}
+            onClick={() => handleAddNewPlan()}
             className="col-span-3 py-5 px-5 border border-secondary rounded-lg bg-foreground flex flex-col items-center justify-center gap-2 cursor-pointer"
           >
             <FiPlus className="text-warning text-2xl" />
