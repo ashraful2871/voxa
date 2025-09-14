@@ -184,7 +184,14 @@ const baseQueryWithAuth: BaseQueryFn<
 export const baseApi = createApi({
   reducerPath: "baseApi",
   baseQuery: baseQueryWithAuth,
-  tagTypes: ["User"],
+  tagTypes: [
+    "User",
+    "Report",
+    "Subscription",
+    "Plan",
+    "Verification",
+    "VoiceModeration",
+  ],
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (credentials) => ({
@@ -196,5 +203,4 @@ export const baseApi = createApi({
     }),
   }),
 });
-
 export const { useLoginMutation } = baseApi;

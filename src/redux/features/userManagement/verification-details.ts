@@ -7,16 +7,19 @@ const verificationDetailsApi = baseApi.injectEndpoints({
         url: `/admin/verification-details/${id}`,
         method: "GET",
       }),
+      providesTags: (result, error, { id }) => [{ type: "Verification", id }],
     }),
 
     approvedVerification: builder.mutation({
-      query: (params) => {
-        return {
-          url: `/admin/update-verification-status`,
-          method: "PATCH",
-          body: params,
-        };
-      },
+      query: (params) => ({
+        url: `/admin/update-verification-status`,
+        method: "PATCH",
+        body: params,
+      }),
+      invalidatesTags: (result, error, params) => [
+        { type: "Verification", id: params.verificationId },
+        "Verification",
+      ],
     }),
   }),
 });
