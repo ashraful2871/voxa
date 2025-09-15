@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
- 
 // Your user data interface
 export interface UserData {
   id: string;
@@ -10,17 +9,16 @@ export interface UserData {
   image?: string;
   isVerified?: boolean;
   status?: "ACTIVE" | "INACTIVE" | "PENDING" | string;
- 
 }
- 
+
 interface InitialState {
-  userData: UserData | {};
+  userData: UserData | object;
 }
- 
+
 const initialState: InitialState = {
   userData: {},
 };
- 
+
 const userDataCatach = createSlice({
   name: "userData",
   initialState,
@@ -30,7 +28,7 @@ const userDataCatach = createSlice({
     },
   },
 });
- 
+
 export const { setUserData } = userDataCatach.actions;
- 
+
 export default userDataCatach.reducer;

@@ -8,15 +8,14 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import Image from "next/image";
 import loginImg from "@/assets/dashboard/login-img.png";
 import logo from "@/assets/dashboard/logo.png";
-import { useForgotPasswordMutation } from "@/redux/api/authApi";
-import { toast } from "sonner";
+// import { useForgotPasswordMutation } from "@/redux/api/authApi";
 
 type Inputs = {
   email: string;
 };
 
 export default function ForgotPassword() {
-  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
+  // const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
 
   const {
     register,
@@ -24,17 +23,15 @@ export default function ForgotPassword() {
     formState: { errors },
   } = useForm<Inputs>();
 
-const onSubmit: SubmitHandler<Inputs> = async (data) => {
-  try {
-    await forgotPassword({ email: data.email }).unwrap();
-
-    toast.success("Check your email for the 6-digit reset code"); 
-    window.location.href = "/reset-password";
-  } catch (error: any) {
-    toast.error(error?.data?.message || "Something went wrong"); 
-  }
-};
-
+  const onSubmit: SubmitHandler<Inputs> = async () => {
+    // try {
+    //   await forgotPassword({ email: data.email }).unwrap();
+    //   toast.success("Check your email for the 6-digit reset code");
+    //   window.location.href = "/reset-password";
+    // } catch (error) {
+    //   toast.error(error?.data?.message || "Something went wrong");
+    // }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -65,7 +62,9 @@ const onSubmit: SubmitHandler<Inputs> = async (data) => {
                       placeholder="Enter your admin email address"
                     />
                     {errors.email && (
-                      <span className="text-primary">{errors.email.message}</span>
+                      <span className="text-primary">
+                        {errors.email.message}
+                      </span>
                     )}
                   </div>
 
@@ -73,9 +72,9 @@ const onSubmit: SubmitHandler<Inputs> = async (data) => {
                     variant="outline"
                     type="submit"
                     className="w-full text-base py-5 font-bold text-primary hover:!text-primary/85 bg-foreground"
-                    disabled={isLoading}
+                    // disabled={isLoading}
                   >
-                    {isLoading ? "Sending..." : "Send Code"}
+                    {/* {isLoading ? "Sending..." : "Send Code"} */}
                   </Button>
                 </div>
               </form>

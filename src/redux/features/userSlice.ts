@@ -1,8 +1,8 @@
 // redux/features/userSlice.ts
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 
 interface UserState {
-  selectedUser: any | null;
+  selectedUser: null;
 }
 
 const initialState: UserState = {
@@ -13,7 +13,7 @@ const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    setSelectedUser: (state, action: PayloadAction<any>) => {
+    setSelectedUser: (state, action) => {
       state.selectedUser = action.payload;
     },
     clearSelectedUser: (state) => {
