@@ -4,13 +4,12 @@
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
 
 import { NavMain } from "./nav-main";
-import { NavUser } from "./nav-user";
+
 
 const data = {
   // user: {
@@ -110,9 +109,9 @@ export default function AppSidebar({ role, ...props }: AppSidebarProps) {
       <SidebarContent>
         <NavMain items={sidebarData?.navMain} />
       </SidebarContent>
-      <SidebarFooter>
+      {/* <SidebarFooter>
         <NavUser />
-      </SidebarFooter>
+      </SidebarFooter> */}
       <SidebarRail />
     </Sidebar>
   );

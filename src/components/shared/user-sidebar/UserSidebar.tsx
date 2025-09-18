@@ -837,7 +837,7 @@ export default function UserSidebar() {
     <>
       {pathName === "/admin/user-management" && (
         <div className="flex justify-end">
-          <div className="h-[850px] bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg">
+          <div className="h- bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg">
             {/* Profile Image */}
             <Image
               src={
@@ -1035,7 +1035,7 @@ export default function UserSidebar() {
       )}
       {pathName === "/admin/voice-moderation" && (
         <div className="flex justify-end">
-          <div className="h-screen bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg flex flex-col">
+          <div className="h- bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg flex flex-col">
             {/* Profile Image */}
             <Image
               src={
@@ -1116,13 +1116,13 @@ export default function UserSidebar() {
               </div>
 
               {/* Flag Info */}
-              <div className="flex gap-2 my-1 items-center text-secondary  border-b border-secondary pb-3">
+              {/* <div className="flex gap-2 my-1 items-center text-secondary  border-b border-secondary pb-3">
                 <MdOutlineWatchLater className="text-xl text-warning" />
                 <p className="text-secondary font-medium text-sm">
                   Flagged by: {moderationDetails?.flagType || "N/A"} - Detected
                   Aggression
                 </p>
-              </div>
+              </div> */}
 
               {/* Voice Note */}
               <div className="mt-4  border-b border-secondary pb-3">
@@ -1299,7 +1299,7 @@ export default function UserSidebar() {
       )}
       {pathName === "/admin/verifications" && (
         <div className="flex justify-end">
-          <div className="h-screen bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg flex flex-col">
+          <div className="h- bg-foreground absolute mx-5 w-64 p-3 z-10 mt-20 rounded-lg flex flex-col">
             {/* Profile Image */}
             <Image
               src={
@@ -1395,16 +1395,9 @@ export default function UserSidebar() {
                   verificationDetails.Verification.map((v: any) => (
                     <div
                       key={v.id}
-                      className="ml-3 border-l border-secondary pl-2 mb-2"
+                      className=" mb-2"
                     >
-                      <p className="text-xs text-secondary">Type: {v.type}</p>
-                      <p className="text-xs text-secondary">
-                        Status: {v.status}
-                      </p>
-                      <p className="text-xs text-secondary">
-                        Created At: {v.createdAt}
-                      </p>
-                      <p className="text-xs text-secondary">Image:</p>
+                  
                       <Image
                         src={v.imageUrl || user}
                         alt=""
@@ -2102,14 +2095,14 @@ export default function UserSidebar() {
                         User Details
                       </h2>
                     </div>
-                    <Button
+                    {/* <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setActiveSidebar("plan")}
                       className="text-xs h-8"
                     >
                       View Plan
-                    </Button>
+                    </Button> */}
                   </div>
 
                   {/* Name + Icons */}

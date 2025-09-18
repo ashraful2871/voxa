@@ -14,7 +14,7 @@ export interface UserData {
 }
  
 interface InitialState {
-  userData: UserData | {};
+  userData: UserData | object;
 }
  
 const initialState: InitialState = {

@@ -183,7 +183,7 @@ export default function Subscriptions() {
           {/* Header & Filter */}
           <div className="space-y-4">
             <h1 className="text-2xl md:text-3xl font-semibold text-white">
-              Verification Queue
+              Subscriptionsj
             </h1>
 
             <div className="flex flex-wrap justify-between items-center gap-2">

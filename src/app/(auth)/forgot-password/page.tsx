@@ -1,44 +1,44 @@
 "use client";
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { SubmitHandler, useForm } from "react-hook-form";
-import Image from "next/image";
-import loginImg from "@/assets/dashboard/login-img.png";
-import logo from "@/assets/dashboard/logo.png";
-import { useForgotPasswordMutation } from "@/redux/api/authApi";
-import { toast } from "sonner";
+// import React from "react";
+// import { Button } from "@/components/ui/button";
+// import { Card, CardContent } from "@/components/ui/card";
+// import { Input } from "@/components/ui/input";
+// import { Label } from "@/components/ui/label";
+// import { SubmitHandler, useForm } from "react-hook-form";
+// import Image from "next/image";
+// import loginImg from "@/assets/dashboard/login-img.png";
+// import logo from "@/assets/dashboard/logo.png";
+// import { useForgotPasswordMutation } from "@/redux/api/authApi";
+// import { toast } from "sonner";
 
-type Inputs = {
-  email: string;
-};
+// type Inputs = {
+//   email: string;
+// };
 
 export default function ForgotPassword() {
-  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
+//   const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<Inputs>();
+//   const {
+//     register,
+//     handleSubmit,
+//     formState: { errors },
+//   } = useForm<Inputs>();
 
-const onSubmit: SubmitHandler<Inputs> = async (data) => {
-  try {
-    await forgotPassword({ email: data.email }).unwrap();
+// const onSubmit: SubmitHandler<Inputs> = async (data) => {
+//   try {
+//     await forgotPassword({ email: data.email }).unwrap();
 
-    toast.success("Check your email for the 6-digit reset code"); 
-    window.location.href = "/reset-password";
-  } catch (error: any) {
-    toast.error(error?.data?.message || "Something went wrong"); 
-  }
-};
+//     toast.success("Check your email for the 6-digit reset code"); 
+//     window.location.href = "/reset-password";
+//   } catch (error) {
+//     toast.error(error?.data?.message || "Something went wrong"); 
+//   }
+// };
 
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="grid grid-cols-2">
+      {/* <div className="grid grid-cols-2">
         <Image className="h-[100vh] w-auto" src={loginImg} alt="" />
         <div className="flex flex-col items-center justify-center">
           <div className="lg:ml-4">
@@ -82,7 +82,7 @@ const onSubmit: SubmitHandler<Inputs> = async (data) => {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

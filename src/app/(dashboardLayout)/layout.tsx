@@ -58,7 +58,7 @@ export default function DashboardLayout({
               </div>
             </div>
           </header>
-          <div className="p-4 pt-0  h-[1050px]">{children}</div>
+          <div className="p-4 pt-0  h-[1450px]">{children}</div>
         </SidebarInset>
         {pathname !== "/admin/overview" && <UserSidebar />}
       </SidebarProvider>
